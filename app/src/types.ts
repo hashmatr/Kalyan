@@ -43,9 +43,13 @@ export interface DayData {
 export interface UserStats {
     currentStreak: number;
     longestStreak: number;
-    totalDays: number;
+    totalDaysTracked: number;
     perfectDays: number;
-    totalHabitsCompleted: number;
+    totalScore: number;
+    averageScore: number;
+    rewardsUnlocked: number;
+    punishments: number;
+    startDate: string;
 }
 
 // Missing types added below

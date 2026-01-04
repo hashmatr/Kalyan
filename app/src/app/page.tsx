@@ -8,7 +8,7 @@ import {
   Menu, X, Zap, Crown, BarChart3
 } from 'lucide-react';
 
-import { DailyProgress, ViewMode, Punishment } from '@/types';
+import { DailyProgress, ViewMode, Punishment, UserStats } from '@/types';
 import { DEFAULT_HABITS, REWARDS } from '@/lib/constants';
 import {
   getAllProgress, getProgressForDate, saveProgress,
@@ -159,7 +159,7 @@ export default function Home() {
     loadData();
   };
 
-  const stats = mounted ? getStats() : {
+  const stats: UserStats = mounted ? getStats() : {
     currentStreak: 0,
     longestStreak: 0,
     totalDaysTracked: 0,
