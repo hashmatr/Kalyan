@@ -74,3 +74,6 @@ export interface Punishment {
     severity: PunishmentSeverity;
     completed?: boolean;
 }
+
+// Re-export User type from auth library
+export type { User } from '@/lib/auth';

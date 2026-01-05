@@ -2,18 +2,42 @@ import { DailyProgress, UserStats, Reward, Punishment } from '@/types';
 import { DEFAULT_HABITS, REWARDS } from './constants';
 import { format, parseISO, differenceInDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, eachDayOfInterval, isWithinInterval } from 'date-fns';
 
-const STORAGE_KEYS = {
+// Get current user ID from localStorage
+function getCurrentUserId(): string {
+    if (typeof window === 'undefined') return 'anonymous';
+
+    try {
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+            const user = JSON.parse(userStr);
+            return user.id || user._id || 'anonymous';
+        }
+    } catch (e) {
+        console.error('Failed to get user ID');
+    }
+    return 'anonymous';
+}
+
+// Generate user-specific storage key
+function getUserStorageKey(baseKey: string): string {
+    const userId = getCurrentUserId();
+    return `${baseKey}_${userId}`;
+}
+
+const BASE_STORAGE_KEYS = {
     PROGRESS: 'kalyan_progress',
     STATS: 'kalyan_stats',
     REWARDS: 'kalyan_rewards',
     PUNISHMENTS: 'kalyan_punishments',
     FIRST_LAUNCH: 'kalyan_first_launch',
+    CUSTOM_HABITS: 'kalyan_custom_habits',
 };
 
-// Get all progress data
+// Get all progress data for current user
 export function getAllProgress(): Record<string, DailyProgress> {
     if (typeof window === 'undefined') return {};
-    const data = localStorage.getItem(STORAGE_KEYS.PROGRESS);
+    const key = getUserStorageKey(BASE_STORAGE_KEYS.PROGRESS);
+    const data = localStorage.getItem(key);
     return data ? JSON.parse(data) : {};
 }
 
@@ -26,9 +50,10 @@ export function getProgressForDate(date: string): DailyProgress | null {
 // Save progress for a date
 export function saveProgress(date: string, progress: DailyProgress): void {
     if (typeof window === 'undefined') return;
+    const key = getUserStorageKey(BASE_STORAGE_KEYS.PROGRESS);
     const allProgress = getAllProgress();
     allProgress[date] = progress;
-    localStorage.setItem(STORAGE_KEYS.PROGRESS, JSON.stringify(allProgress));
+    localStorage.setItem(key, JSON.stringify(allProgress));
     updateStats();
     checkRewards();
 }
@@ -45,7 +70,8 @@ export function getStats(): UserStats {
     if (typeof window === 'undefined') {
         return getDefaultStats();
     }
-    const data = localStorage.getItem(STORAGE_KEYS.STATS);
+    const key = getUserStorageKey(BASE_STORAGE_KEYS.STATS);
+    const data = localStorage.getItem(key);
     return data ? JSON.parse(data) : getDefaultStats();
 }
 
@@ -69,9 +95,10 @@ export function updateStats(): void {
 
     const allProgress = getAllProgress();
     const dates = Object.keys(allProgress).sort();
+    const key = getUserStorageKey(BASE_STORAGE_KEYS.STATS);
 
     if (dates.length === 0) {
-        localStorage.setItem(STORAGE_KEYS.STATS, JSON.stringify(getDefaultStats()));
+        localStorage.setItem(key, JSON.stringify(getDefaultStats()));
         return;
     }
 
@@ -131,14 +158,15 @@ export function updateStats(): void {
         startDate: sortedDates[0],
     };
 
-    localStorage.setItem(STORAGE_KEYS.STATS, JSON.stringify(stats));
+    localStorage.setItem(key, JSON.stringify(stats));
 }
 
-// Get rewards
+// Get rewards for current user
 export function getRewards(): Reward[] {
     if (typeof window === 'undefined') return REWARDS;
-    const data = localStorage.getItem(STORAGE_KEYS.REWARDS);
-    return data ? JSON.parse(data) : REWARDS;
+    const key = getUserStorageKey(BASE_STORAGE_KEYS.REWARDS);
+    const data = localStorage.getItem(key);
+    return data ? JSON.parse(data) : REWARDS.map(r => ({ ...r })); // Return fresh copy
 }
 
 // Check and unlock rewards
@@ -147,6 +175,7 @@ export function checkRewards(): Reward[] {
 
     const stats = getStats();
     const rewards = getRewards();
+    const key = getUserStorageKey(BASE_STORAGE_KEYS.REWARDS);
     let updated = false;
 
     rewards.forEach((reward, index) => {
@@ -161,36 +190,39 @@ export function checkRewards(): Reward[] {
     });
 
     if (updated) {
-        localStorage.setItem(STORAGE_KEYS.REWARDS, JSON.stringify(rewards));
+        localStorage.setItem(key, JSON.stringify(rewards));
     }
 
     return rewards;
 }
 
-// Get punishments
+// Get punishments for current user
 export function getPunishments(): Punishment[] {
     if (typeof window === 'undefined') return [];
-    const data = localStorage.getItem(STORAGE_KEYS.PUNISHMENTS);
+    const key = getUserStorageKey(BASE_STORAGE_KEYS.PUNISHMENTS);
+    const data = localStorage.getItem(key);
     return data ? JSON.parse(data) : [];
 }
 
 // Add punishment
 export function addPunishment(punishment: Punishment): void {
     if (typeof window === 'undefined') return;
+    const key = getUserStorageKey(BASE_STORAGE_KEYS.PUNISHMENTS);
     const punishments = getPunishments();
     punishments.push(punishment);
-    localStorage.setItem(STORAGE_KEYS.PUNISHMENTS, JSON.stringify(punishments));
+    localStorage.setItem(key, JSON.stringify(punishments));
     updateStats();
 }
 
 // Complete punishment
 export function completePunishment(id: string): void {
     if (typeof window === 'undefined') return;
+    const key = getUserStorageKey(BASE_STORAGE_KEYS.PUNISHMENTS);
     const punishments = getPunishments();
     const updatedPunishments = punishments.map(p =>
         p.id === id ? { ...p, completed: true } : p
     );
-    localStorage.setItem(STORAGE_KEYS.PUNISHMENTS, JSON.stringify(updatedPunishments));
+    localStorage.setItem(key, JSON.stringify(updatedPunishments));
     updateStats();
 }
 
@@ -302,22 +334,95 @@ export function getYearlyStats(year: number) {
     };
 }
 
-// Check if first launch
+// Check if first launch for current user
 export function isFirstLaunch(): boolean {
     if (typeof window === 'undefined') return true;
-    return !localStorage.getItem(STORAGE_KEYS.FIRST_LAUNCH);
+    const key = getUserStorageKey(BASE_STORAGE_KEYS.FIRST_LAUNCH);
+    return !localStorage.getItem(key);
 }
 
-// Mark as launched
+// Mark as launched for current user
 export function markAsLaunched(): void {
     if (typeof window === 'undefined') return;
-    localStorage.setItem(STORAGE_KEYS.FIRST_LAUNCH, 'true');
+    const key = getUserStorageKey(BASE_STORAGE_KEYS.FIRST_LAUNCH);
+    localStorage.setItem(key, 'true');
 }
 
-// Clear all data (for testing)
+// Clear all data for current user
 export function clearAllData(): void {
     if (typeof window === 'undefined') return;
-    Object.values(STORAGE_KEYS).forEach(key => {
+    Object.values(BASE_STORAGE_KEYS).forEach(baseKey => {
+        const key = getUserStorageKey(baseKey);
         localStorage.removeItem(key);
     });
 }
+
+// Clear all data for a specific user (admin function)
+export function clearUserData(userId: string): void {
+    if (typeof window === 'undefined') return;
+    Object.values(BASE_STORAGE_KEYS).forEach(baseKey => {
+        const key = `${baseKey}_${userId}`;
+        localStorage.removeItem(key);
+    });
+}
+
+// ============ CUSTOM HABITS ============
+
+import { DailyHabit } from '@/types';
+
+// Get custom habits for current user
+export function getCustomHabits(): DailyHabit[] {
+    if (typeof window === 'undefined') return [];
+    const key = getUserStorageKey(BASE_STORAGE_KEYS.CUSTOM_HABITS);
+    const data = localStorage.getItem(key);
+    return data ? JSON.parse(data) : [];
+}
+
+// Add a new custom habit
+export function addCustomHabit(habit: Omit<DailyHabit, 'id' | 'completed'>): DailyHabit {
+    if (typeof window === 'undefined') throw new Error('Cannot add habit on server');
+
+    const key = getUserStorageKey(BASE_STORAGE_KEYS.CUSTOM_HABITS);
+    const habits = getCustomHabits();
+
+    const newHabit: DailyHabit = {
+        ...habit,
+        id: `custom_${Date.now()}`,
+        completed: false,
+    };
+
+    habits.push(newHabit);
+    localStorage.setItem(key, JSON.stringify(habits));
+
+    return newHabit;
+}
+
+// Update a custom habit
+export function updateCustomHabit(id: string, updates: Partial<DailyHabit>): void {
+    if (typeof window === 'undefined') return;
+
+    const key = getUserStorageKey(BASE_STORAGE_KEYS.CUSTOM_HABITS);
+    const habits = getCustomHabits();
+    const index = habits.findIndex(h => h.id === id);
+
+    if (index !== -1) {
+        habits[index] = { ...habits[index], ...updates };
+        localStorage.setItem(key, JSON.stringify(habits));
+    }
+}
+
+// Delete a custom habit
+export function deleteCustomHabit(id: string): void {
+    if (typeof window === 'undefined') return;
+
+    const key = getUserStorageKey(BASE_STORAGE_KEYS.CUSTOM_HABITS);
+    const habits = getCustomHabits();
+    const filtered = habits.filter(h => h.id !== id);
+    localStorage.setItem(key, JSON.stringify(filtered));
+}
+
+// Get all habits (default + custom)
+export function getAllHabits(): DailyHabit[] {
+    return [...DEFAULT_HABITS, ...getCustomHabits()];
+}
+

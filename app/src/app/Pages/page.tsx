@@ -5,17 +5,19 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { format, isToday, isFuture } from 'date-fns';
 import {
   Flame, Trophy, Target, Calendar, Award, AlertTriangle,
-  Menu, X, Zap, Crown, BarChart3
+  Menu, X, Zap, Crown, BarChart3, Plus
 } from 'lucide-react';
 
-import { DailyProgress, ViewMode, Punishment, UserStats } from '@/types';
+import { DailyProgress, ViewMode, Punishment, UserStats, DailyHabit, HabitCategory } from '@/types';
 import { DEFAULT_HABITS, REWARDS } from '@/lib/constants';
 import {
   getAllProgress, getProgressForDate, saveProgress,
   getStats, getRewards, getPunishments, addPunishment, completePunishment,
   calculateDailyScore, getWeeklyStats, getMonthlyStats, getYearlyStats,
-  isFirstLaunch, markAsLaunched
+  isFirstLaunch, markAsLaunched, getAllHabits, addCustomHabit
 } from '@/lib/storage';
+
+import { AddHabitModal } from '@/components/AddHabitModal';
 
 import { HabitCard } from '@/components/HabitCard';
 import { StatsCard } from '@/components/StatsCard';
@@ -27,6 +29,7 @@ import { PunishmentModal, PunishmentList } from '@/components/PunishmentCard';
 import { CelebrationModal } from '@/components/CelebrationModal';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { ThemeProvider } from '@/components/ThemeContext';
+import UserProfileDropdown from '@/components/UserProfileDropdown';
 
 type ExtendedViewMode = ViewMode | 'rewards' | 'punishments';
 
@@ -37,6 +40,8 @@ export default function Home() {
   const [habits, setHabits] = useState<Record<string, boolean>>({});
   const [allProgress, setAllProgress] = useState<Record<string, DailyProgress>>({});
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [allHabits, setAllHabits] = useState<DailyHabit[]>(DEFAULT_HABITS);
+  const [isAddHabitOpen, setIsAddHabitOpen] = useState(false);
 
   const [celebrationModal, setCelebrationModal] = useState<{
     isOpen: boolean;
@@ -69,16 +74,27 @@ export default function Home() {
         setHabits(progress.habits);
       } else {
         const initialHabits: Record<string, boolean> = {};
-        DEFAULT_HABITS.forEach(habit => {
+        allHabits.forEach(habit => {
           initialHabits[habit.id] = false;
         });
         setHabits(initialHabits);
       }
     }
-  }, [selectedDate, mounted]);
+  }, [selectedDate, mounted, allHabits.length]);
 
   const loadData = () => {
     setAllProgress(getAllProgress());
+    setAllHabits(getAllHabits());
+  };
+
+  const handleAddHabit = (habitData: { name: string; description: string; icon: string; category: HabitCategory }) => {
+    addCustomHabit({
+      ...habitData,
+    });
+    setIsAddHabitOpen(false);
+    loadData();
+    // Force refresh habits state to include the new habit
+    setHabits(prev => ({ ...prev, [`custom_${Date.now()}`]: false }));
   };
 
   const toggleHabit = useCallback((habitId: string) => {
@@ -136,7 +152,7 @@ export default function Home() {
     }
 
     if (wasBroken) {
-      const habit = DEFAULT_HABITS.find(h => h.id === habitId);
+      const habit = allHabits.find(h => h.id === habitId);
       const punishment: Punishment = {
         id: `${Date.now()}`,
         name: 'Habit Broken',
@@ -247,6 +263,9 @@ export default function Home() {
 
                 <ThemeToggle />
 
+                {/* User Profile Dropdown */}
+                <UserProfileDropdown />
+
                 {/* Mobile Menu Button */}
                 <button
                   onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -332,7 +351,7 @@ export default function Home() {
                   </h3>
                   <ProgressRing progress={dailyScore} size={160} strokeWidth={12} />
                   <p className="text-slate-500 text-base mt-6">
-                    {Object.values(habits).filter(Boolean).length} of {DEFAULT_HABITS.length} habits completed
+                    {Object.values(habits).filter(Boolean).length} of {allHabits.length} habits completed
                   </p>
                   {dailyScore === 100 && (
                     <div className="flex items-center gap-2 mt-4 text-emerald-600 font-bold text-lg">
@@ -345,12 +364,28 @@ export default function Home() {
 
               {/* Habits List - Layer 3 */}
               <div>
-                <h2 className="text-xl lg:text-2xl font-bold text-slate-900 mb-16 flex items-center gap-3">
-                  <Zap className="w-6 h-6 text-yellow-500" />
-                  Daily Habits
-                </h2>
+                <div className="flex items-center justify-between mb-8">
+                  <h2 className="text-xl lg:text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
+                    <Zap className="w-6 h-6 text-yellow-500" />
+                    Daily Habits
+                  </h2>
+                  <button
+                    onClick={() => setIsAddHabitOpen(true)}
+                    className="
+                      flex items-center gap-2 px-5 py-2.5 rounded-xl
+                      bg-gradient-to-r from-indigo-600 to-violet-600
+                      hover:from-indigo-500 hover:to-violet-500
+                      text-white font-semibold text-sm
+                      shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30
+                      transition-all duration-200 hover:-translate-y-0.5
+                    "
+                  >
+                    <Plus className="w-4 h-4" strokeWidth={2.5} />
+                    Create Habit
+                  </button>
+                </div>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                  {DEFAULT_HABITS.map((habit) => (
+                  {allHabits.map((habit) => (
                     <HabitCard
                       key={habit.id}
                       habit={habit}
@@ -432,7 +467,7 @@ export default function Home() {
               <div className="glass-card p-6 lg:p-8" style={{ marginTop: '2rem' }}>
                 <h3 className="text-lg lg:text-xl font-semibold text-slate-900 mb-8">Habit Completion This Month</h3>
                 <div className="space-y-6">
-                  {DEFAULT_HABITS.map(habit => {
+                  {allHabits.map(habit => {
                     const completed = monthlyStats.habitsCompletion[habit.id] || 0;
                     const percentage = monthlyStats.totalDays > 0
                       ? Math.round((completed / monthlyStats.totalDays) * 100)
@@ -531,6 +566,12 @@ export default function Home() {
           isOpen={punishmentModal.isOpen}
           punishment={punishmentModal.punishment}
           onClose={() => setPunishmentModal({ isOpen: false, punishment: null })}
+        />
+
+        <AddHabitModal
+          isOpen={isAddHabitOpen}
+          onClose={() => setIsAddHabitOpen(false)}
+          onAdd={handleAddHabit}
         />
 
         {/* Floating Streak Badge */}

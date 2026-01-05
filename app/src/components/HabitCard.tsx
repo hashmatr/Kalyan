@@ -1,22 +1,8 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import {
-    Sunrise, Heart, Shield, Dumbbell, Code, Brain, Rocket, Apple,
-    Check
-} from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 import { DailyHabit } from '@/types';
-
-const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-    Sunrise,
-    Heart,
-    Shield,
-    Dumbbell,
-    Code,
-    Brain,
-    Rocket,
-    Apple,
-};
 
 const categoryGradients: Record<string, string> = {
     spiritual: 'from-purple-500 to-indigo-600',
@@ -26,10 +12,17 @@ const categoryGradients: Record<string, string> = {
 };
 
 const categoryBgColors: Record<string, string> = {
-    spiritual: 'bg-purple-500/10 border-purple-500/30 hover:border-purple-500/50',
-    physical: 'bg-green-500/10 border-green-500/30 hover:border-green-500/50',
-    mental: 'bg-blue-500/10 border-blue-500/30 hover:border-blue-500/50',
-    discipline: 'bg-orange-500/10 border-orange-500/30 hover:border-orange-500/50',
+    spiritual: 'bg-purple-500/5 dark:bg-purple-500/10 border-purple-200 dark:border-purple-500/20 hover:border-purple-500/40',
+    physical: 'bg-green-500/5 dark:bg-green-500/10 border-green-200 dark:border-green-500/20 hover:border-green-500/40',
+    mental: 'bg-blue-500/5 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/20 hover:border-blue-500/40',
+    discipline: 'bg-orange-500/5 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/20 hover:border-orange-500/40',
+};
+
+const categoryBadgeColors: Record<string, string> = {
+    spiritual: 'bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-300 border-purple-200 dark:border-purple-500/30',
+    physical: 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-300 border-green-200 dark:border-green-500/30',
+    mental: 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300 border-blue-200 dark:border-blue-500/30',
+    discipline: 'bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-300 border-orange-200 dark:border-orange-500/30',
 };
 
 interface HabitCardProps {
@@ -40,58 +33,57 @@ interface HabitCardProps {
 }
 
 export function HabitCard({ habit, isCompleted, onToggle, disabled }: HabitCardProps) {
-    const IconComponent = iconMap[habit.icon] || Heart;
+    // Dynamically get icon
+    const IconComponent = (LucideIcons[habit.icon as keyof typeof LucideIcons] as React.ElementType) || LucideIcons.Heart;
 
     return (
         <motion.div
-            whileHover={{ scale: disabled ? 1 : 1.03, y: disabled ? 0 : -3 }}
-            whileTap={{ scale: disabled ? 1 : 0.97 }}
+            whileHover={{ scale: disabled ? 1 : 1.02, y: disabled ? 0 : -2 }}
+            whileTap={{ scale: disabled ? 1 : 0.98 }}
             onClick={() => !disabled && onToggle(habit.id)}
             className={`
-        relative rounded-xl cursor-pointer transition-all duration-300
-        border-2 overflow-hidden
+        relative rounded-2xl cursor-pointer transition-all duration-300
+        border overflow-hidden group
         ${isCompleted
-                    ? 'bg-emerald-500/15 border-emerald-500/50 shadow-lg shadow-emerald-500/10'
+                    ? 'bg-emerald-50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-500/30'
                     : categoryBgColors[habit.category]
                 }
-        ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
+        ${disabled ? 'opacity-50 cursor-not-allowed' : 'shadow-sm hover:shadow-md'}
       `}
         >
-            {/* Top gradient bar */}
-            <div className={`h-1 w-full bg-gradient-to-r ${categoryGradients[habit.category]}`} />
-
-            {/* Main content - Compact */}
-            <div className="p-3 sm:p-4">
+            {/* Main content */}
+            <div className="p-5">
                 {/* Top row: Icon and Checkbox */}
-                <div className="flex items-start justify-between mb-2 sm:mb-3">
-                    {/* Icon container - Smaller */}
+                <div className="flex items-start justify-between mb-4">
+                    {/* Icon container */}
                     <div className={`
-            w-10 h-10 sm:w-12 sm:h-12 rounded-lg 
+            w-12 h-12 rounded-xl
             flex items-center justify-center
             bg-gradient-to-br ${categoryGradients[habit.category]}
-            shadow-md
+            shadow-lg shadow-black/5
+            group-hover:scale-105 transition-transform duration-300
           `}>
-                        <IconComponent className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                        <IconComponent className="w-6 h-6 text-white" />
                     </div>
 
-                    {/* Checkbox - Smaller */}
+                    {/* Checkbox */}
                     <div className={`
-            w-6 h-6 sm:w-7 sm:h-7 rounded-full 
+            w-8 h-8 rounded-full 
             flex items-center justify-center
             border-2 transition-all duration-300
             ${isCompleted
-                            ? 'border-emerald-500 bg-emerald-500 shadow-md shadow-emerald-500/30'
-                            : 'border-slate-300 dark:border-slate-600 hover:border-slate-400 dark:hover:border-slate-500'
+                            ? 'border-emerald-500 bg-emerald-500 shadow-lg shadow-emerald-500/30 scale-110'
+                            : 'border-slate-200 dark:border-slate-700 group-hover:border-slate-300 dark:group-hover:border-slate-600'
                         }
           `}>
-                        {isCompleted && <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" strokeWidth={3} />}
+                        {isCompleted && <LucideIcons.Check className="w-5 h-5 text-white" strokeWidth={3} />}
                     </div>
                 </div>
 
                 {/* Title */}
                 <h3 className={`
-          font-bold text-sm sm:text-base mb-1
-          ${isCompleted ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white'}
+          font-bold text-lg leading-tight mb-3
+          ${isCompleted ? 'text-emerald-700 dark:text-emerald-400 line-through decoration-2 opacity-75' : 'text-slate-900 dark:text-white'}
           line-clamp-2
         `}>
                     {habit.name}
@@ -99,8 +91,8 @@ export function HabitCard({ habit, isCompleted, onToggle, disabled }: HabitCardP
 
                 {/* Category badge */}
                 <span className={`
-          inline-block px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-semibold uppercase tracking-wide
-          bg-gradient-to-r ${categoryGradients[habit.category]} text-white
+          inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider
+          border ${categoryBadgeColors[habit.category]}
         `}>
                     {habit.category}
                 </span>
