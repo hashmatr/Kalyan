@@ -1,5 +1,5 @@
 import { DailyProgress, UserStats, Reward, Punishment } from '@/types';
-import { DEFAULT_HABITS, REWARDS } from './constants';
+import { REWARDS, PHYSICAL_PUNISHMENTS, PUNISHMENTS } from './constants';
 import { format, parseISO, differenceInDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, eachDayOfInterval, isWithinInterval } from 'date-fns';
 
 // Get current user ID from localStorage
@@ -60,7 +60,8 @@ export function saveProgress(date: string, progress: DailyProgress): void {
 
 // Calculate score for a day based on completed habits
 export function calculateDailyScore(habits: Record<string, boolean>): number {
-    const totalHabits = DEFAULT_HABITS.length;
+    const totalHabits = Object.keys(habits).length;
+    if (totalHabits === 0) return 0;
     const completedHabits = Object.values(habits).filter(Boolean).length;
     return Math.round((completedHabits / totalHabits) * 100);
 }
@@ -215,16 +216,20 @@ export function addPunishment(punishment: Punishment): void {
 }
 
 // Complete punishment
-export function completePunishment(id: string): void {
+// Toggle punishment completion status
+export function togglePunishment(id: string): void {
     if (typeof window === 'undefined') return;
     const key = getUserStorageKey(BASE_STORAGE_KEYS.PUNISHMENTS);
     const punishments = getPunishments();
     const updatedPunishments = punishments.map(p =>
-        p.id === id ? { ...p, completed: true } : p
+        p.id === id ? { ...p, completed: !p.completed } : p
     );
     localStorage.setItem(key, JSON.stringify(updatedPunishments));
     updateStats();
 }
+
+// Deprecated alias for backward compatibility
+export const completePunishment = togglePunishment;
 
 // Get weekly stats
 export function getWeeklyStats(date: Date) {
@@ -254,7 +259,7 @@ export function getWeeklyStats(date: Date) {
         weekEnd: format(weekEnd, 'yyyy-MM-dd'),
         averageScore: daysWithData > 0 ? Math.round(totalScore / daysWithData) : 0,
         completedHabits,
-        totalHabits: daysWithData * DEFAULT_HABITS.length,
+        totalHabits: completedHabits, // Use actual completed habits count
         perfectDays,
         daysWithData,
     };
@@ -272,7 +277,9 @@ export function getMonthlyStats(date: Date) {
     let daysWithData = 0;
     const habitsCompletion: Record<string, number> = {};
 
-    DEFAULT_HABITS.forEach(habit => {
+    // Initialize from custom habits
+    const allHabits = getCustomHabits();
+    allHabits.forEach(habit => {
         habitsCompletion[habit.id] = 0;
     });
 
@@ -421,8 +428,76 @@ export function deleteCustomHabit(id: string): void {
     localStorage.setItem(key, JSON.stringify(filtered));
 }
 
-// Get all habits (default + custom)
+// Get all habits (only custom habits - users create their own)
 export function getAllHabits(): DailyHabit[] {
-    return [...DEFAULT_HABITS, ...getCustomHabits()];
+    return getCustomHabits();
+}
+
+// Check for incomplete habits from previous day and assign punishments
+export function checkDailyPunishments(): Punishment[] {
+    if (typeof window === 'undefined') return [];
+
+    const allProgress = getAllProgress();
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = format(yesterday, 'yyyy-MM-dd');
+
+    // Check if we already checked for yesterday
+    const lastCheckKey = getUserStorageKey('last_punishment_check');
+    const lastCheck = localStorage.getItem(lastCheckKey);
+
+    // Only run once per day
+    if (lastCheck === yesterdayStr) {
+        return [];
+    }
+
+    const yesterdayProgress = allProgress[yesterdayStr];
+    const newPunishments: Punishment[] = [];
+
+    const habits = getCustomHabits();
+    if (habits.length === 0) return []; // No habits to punish
+
+    const incompleteHabits: DailyHabit[] = [];
+
+    if (yesterdayProgress) {
+        // Check which habits were NOT completed
+        habits.forEach(habit => {
+            if (!yesterdayProgress.habits[habit.id]) {
+                incompleteHabits.push(habit);
+            }
+        });
+    } else {
+        // check history to avoid punishing new users
+        const hasHistory = Object.keys(allProgress).some(date => date < yesterdayStr);
+        if (hasHistory) {
+            // User existed but didn't open app yesterday -> All habits missed
+            incompleteHabits.push(...habits);
+        }
+    }
+
+    if (incompleteHabits.length > 0) {
+        // Pick a random physical punishment
+        const randomPunishment = PHYSICAL_PUNISHMENTS[Math.floor(Math.random() * PHYSICAL_PUNISHMENTS.length)];
+
+        const punishment: Punishment = {
+            id: `punish_${Date.now()}`,
+            name: `${randomPunishment.name}`,
+            description: `Penalty for missing ${incompleteHabits.length} habits yesterday. ${randomPunishment.description}`,
+            icon: randomPunishment.icon,
+            triggeredDate: format(today, 'yyyy-MM-dd HH:mm'),
+            habitBroken: `${incompleteHabits.length} Habits`,
+            severity: 'minor',
+            completed: false
+        };
+
+        addPunishment(punishment);
+        newPunishments.push(punishment);
+    }
+
+    // Mark today as checked
+    localStorage.setItem(lastCheckKey, yesterdayStr);
+
+    return newPunishments;
 }
 

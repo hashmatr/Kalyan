@@ -3,16 +3,34 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function Authentication({ onAuthSuccess }) {
-    const [mode, setMode] = useState('signin');
+interface AuthenticationProps {
+    onAuthSuccess?: () => void;
+}
+
+interface FormData {
+    name: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+}
+
+interface FormErrors {
+    name?: string;
+    email?: string;
+    password?: string;
+    confirmPassword?: string;
+}
+
+export default function Authentication({ onAuthSuccess }: AuthenticationProps) {
+    const [mode, setMode] = useState<'signin' | 'signup'>('signin');
     const [mounted, setMounted] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [errors, setErrors] = useState({});
+    const [errors, setErrors] = useState<FormErrors>({});
     const [successMessage, setSuccessMessage] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<FormData>({
         name: '',
         email: '',
         password: '',
@@ -23,8 +41,8 @@ export default function Authentication({ onAuthSuccess }) {
         setMounted(true);
     }, []);
 
-    const validateForm = () => {
-        const newErrors = {};
+    const validateForm = (): boolean => {
+        const newErrors: FormErrors = {};
 
         if (mode === 'signup' && !formData.name.trim()) {
             newErrors.name = 'Name is required';
@@ -54,15 +72,15 @@ export default function Authentication({ onAuthSuccess }) {
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleInputChange = (e) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
-        if (errors[name]) {
+        if (errors[name as keyof FormErrors]) {
             setErrors(prev => ({ ...prev, [name]: undefined }));
         }
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (!validateForm()) return;

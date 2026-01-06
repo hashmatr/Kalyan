@@ -20,16 +20,14 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default function PagesLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={inter.variable}>
-      <body className="antialiased animated-bg grid-pattern min-h-screen">
-        {children}
-      </body>
-    </html>
+    <div className={`${inter.variable} antialiased animated-bg grid-pattern min-h-screen`}>
+      {children}
+    </div>
   );
 }

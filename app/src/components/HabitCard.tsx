@@ -29,10 +29,11 @@ interface HabitCardProps {
     habit: DailyHabit;
     isCompleted: boolean;
     onToggle: (habitId: string) => void;
+    onDelete?: (habitId: string) => void;
     disabled?: boolean;
 }
 
-export function HabitCard({ habit, isCompleted, onToggle, disabled }: HabitCardProps) {
+export function HabitCard({ habit, isCompleted, onToggle, onDelete, disabled }: HabitCardProps) {
     // Dynamically get icon
     const IconComponent = (LucideIcons[habit.icon as keyof typeof LucideIcons] as React.ElementType) || LucideIcons.Heart;
 
@@ -51,6 +52,26 @@ export function HabitCard({ habit, isCompleted, onToggle, disabled }: HabitCardP
         ${disabled ? 'opacity-50 cursor-not-allowed' : 'shadow-sm hover:shadow-md'}
       `}
         >
+            {/* Delete Button - Absolute positioned top-right, visible on hover */}
+            {onDelete && !disabled && (
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        if (confirm('Are you sure you want to delete this habit?')) {
+                            onDelete(habit.id);
+                        }
+                    }}
+                    className="
+                        absolute top-3 right-3 p-1.5 rounded-lg
+                        text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20
+                        opacity-0 group-hover:opacity-100 transition-all duration-200
+                        z-10
+                    "
+                >
+                    <LucideIcons.Trash2 className="w-4 h-4" />
+                </button>
+            )}
+
             {/* Main content */}
             <div className="p-5">
                 {/* Top row: Icon and Checkbox */}

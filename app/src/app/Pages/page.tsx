@@ -9,13 +9,15 @@ import {
 } from 'lucide-react';
 
 import { DailyProgress, ViewMode, Punishment, UserStats, DailyHabit, HabitCategory } from '@/types';
-import { DEFAULT_HABITS, REWARDS } from '@/lib/constants';
+import { REWARDS } from '@/lib/constants';
 import {
   getAllProgress, getProgressForDate, saveProgress,
   getStats, getRewards, getPunishments, addPunishment, completePunishment,
   calculateDailyScore, getWeeklyStats, getMonthlyStats, getYearlyStats,
-  isFirstLaunch, markAsLaunched, getAllHabits, addCustomHabit
+  isFirstLaunch, markAsLaunched, getAllHabits, addCustomHabit, deleteCustomHabit, checkDailyPunishments,
+  checkRewards
 } from '@/lib/storage';
+import { loadFromDatabase, scheduleSyncWithDatabase, deleteHabitFromDB } from '@/lib/apiStorage';
 
 import { AddHabitModal } from '@/components/AddHabitModal';
 
@@ -40,7 +42,7 @@ export default function Home() {
   const [habits, setHabits] = useState<Record<string, boolean>>({});
   const [allProgress, setAllProgress] = useState<Record<string, DailyProgress>>({});
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [allHabits, setAllHabits] = useState<DailyHabit[]>(DEFAULT_HABITS);
+  const [allHabits, setAllHabits] = useState<DailyHabit[]>([]);  // Empty - users add their own habits
   const [isAddHabitOpen, setIsAddHabitOpen] = useState(false);
 
   const [celebrationModal, setCelebrationModal] = useState<{
@@ -60,6 +62,21 @@ export default function Home() {
     setMounted(true);
     loadData();
 
+    // Check for missed habits from yesterday
+    const newPunishments = checkDailyPunishments();
+    if (newPunishments.length > 0) {
+      scheduleSyncWithDatabase();
+      // Show modal for the first new punishment
+      setPunishmentModal({ isOpen: true, punishment: newPunishments[0] });
+    }
+
+    // Load data from database on mount
+    loadFromDatabase().then((success) => {
+      if (success) {
+        loadData(); // Reload local data after DB sync
+      }
+    });
+
     if (isFirstLaunch()) {
       markAsLaunched();
     }
@@ -71,7 +88,12 @@ export default function Home() {
       const progress = getProgressForDate(dateStr);
 
       if (progress) {
-        setHabits(progress.habits);
+        // Only keep habits that exist in allHabits
+        const validHabits: Record<string, boolean> = {};
+        allHabits.forEach(habit => {
+          validHabits[habit.id] = progress.habits[habit.id] || false;
+        });
+        setHabits(validHabits);
       } else {
         const initialHabits: Record<string, boolean> = {};
         allHabits.forEach(habit => {
@@ -82,9 +104,13 @@ export default function Home() {
     }
   }, [selectedDate, mounted, allHabits.length]);
 
+  const [rewards, setRewards] = useState(REWARDS);
+
   const loadData = () => {
+    checkRewards(); // Check and unlock rewards based on new stats
     setAllProgress(getAllProgress());
     setAllHabits(getAllHabits());
+    setRewards(getRewards());
   };
 
   const handleAddHabit = (habitData: { name: string; description: string; icon: string; category: HabitCategory }) => {
@@ -95,6 +121,37 @@ export default function Home() {
     loadData();
     // Force refresh habits state to include the new habit
     setHabits(prev => ({ ...prev, [`custom_${Date.now()}`]: false }));
+  };
+
+  const handleDeleteHabit = async (habitId: string) => {
+    // Remove locally
+    deleteCustomHabit(habitId);
+
+    // Optimistically update UI
+    setAllHabits(prev => prev.filter(h => h.id !== habitId));
+
+    // Remove from current day's tracking if present
+    const newHabits = { ...habits };
+    delete newHabits[habitId];
+    setHabits(newHabits);
+
+    // Recalculate score for today
+    const score = calculateDailyScore(newHabits);
+    const dateStr = format(selectedDate, 'yyyy-MM-dd');
+
+    // Save updated progress locally
+    const progress: DailyProgress = {
+      date: dateStr,
+      habits: newHabits,
+      score,
+      streakBroken: false, // Reset streak broken if they deleted the broken habit? Maybe.
+    };
+    saveProgress(dateStr, progress);
+
+    // Sync to DB
+    await deleteHabitFromDB(habitId); // Delete habit definition
+    scheduleSyncWithDatabase(); // Sync updated stats/progress
+    loadData();
   };
 
   const toggleHabit = useCallback((habitId: string) => {
@@ -119,6 +176,7 @@ export default function Home() {
     };
 
     saveProgress(dateStr, progress);
+    scheduleSyncWithDatabase(); // Sync with database
     loadData();
 
     if (score === 100 && previousProgress?.score !== 100) {
@@ -151,27 +209,12 @@ export default function Home() {
       }
     }
 
-    if (wasBroken) {
-      const habit = allHabits.find(h => h.id === habitId);
-      const punishment: Punishment = {
-        id: `${Date.now()}`,
-        name: 'Habit Broken',
-        description: `You broke the ${habit?.name} habit`,
-        triggeredDate: format(new Date(), 'yyyy-MM-dd HH:mm'),
-        habitBroken: habit?.name || habitId,
-        severity: 'minor',
-      };
-
-      addPunishment(punishment);
-
-      setTimeout(() => {
-        setPunishmentModal({ isOpen: true, punishment });
-      }, 300);
-    }
+    // Immediate punishment logic removed - now handled by checkDailyPunishments at start of new day
   }, [habits, selectedDate, allProgress]);
 
   const handleCompletePunishment = (id: string) => {
     completePunishment(id);
+    scheduleSyncWithDatabase(); // Sync with database
     loadData();
   };
 
@@ -187,7 +230,6 @@ export default function Home() {
     startDate: format(new Date(), 'yyyy-MM-dd'),
   };
 
-  const rewards = mounted ? getRewards() : REWARDS;
   const punishments = mounted ? getPunishments() : [];
   const dailyScore = calculateDailyScore(habits);
   const weeklyStats = mounted ? getWeeklyStats(selectedDate) : null;
@@ -234,7 +276,7 @@ export default function Home() {
 
               {/* Desktop Navigation */}
               <nav className="hidden lg:flex items-center gap-3">
-                {navigationItems.map(item => (
+                {navigationItems.map((item) => (
                   <button
                     key={item.id}
                     onClick={() => setViewMode(item.id as ExtendedViewMode)}
@@ -323,7 +365,7 @@ export default function Home() {
         </header>
 
         {/* Main Content */}
-        <div className="container-app py-16">
+        <div className="container-app py-16 pb-32">
           {/* Stats Overview - Layer 1 */}
           <section className="mb-32 py-8 lg:py-12">
             <StatsCard stats={stats} />
@@ -365,36 +407,80 @@ export default function Home() {
               {/* Habits List - Layer 3 */}
               <div>
                 <div className="flex items-center justify-between mb-8">
-                  <h2 className="text-xl lg:text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
-                    <Zap className="w-6 h-6 text-yellow-500" />
+                  <h2 className="text-xl lg:text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2 ">
+                    <Zap className="w-10 h-10 text-yellow-500" />
                     Daily Habits
                   </h2>
-                  <button
-                    onClick={() => setIsAddHabitOpen(true)}
-                    className="
-                      flex items-center gap-2 px-5 py-2.5 rounded-xl
-                      bg-gradient-to-r from-indigo-600 to-violet-600
-                      hover:from-indigo-500 hover:to-violet-500
-                      text-white font-semibold text-sm
-                      shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30
-                      transition-all duration-200 hover:-translate-y-0.5
-                    "
+                  {allHabits.length > 0 && (
+                    <button
+                      onClick={() => setIsAddHabitOpen(true)}
+                      className="
+                        flex items-center gap-2 px-6 py-3 rounded-xl
+                        bg-gradient-to-r from-indigo-600 to-violet-600
+                        hover:from-indigo-500 hover:to-violet-500
+                        text-white font-semibold text-base
+                        shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40
+                        transition-all duration-300 hover:-translate-y-1 hover:scale-105
+                      "
+                    >
+                      <Plus className="w-5 h-5" strokeWidth={2.5} />
+                      Add New Habit
+                    </button>
+                  )}
+                </div>
+
+                {/* Empty State - Show when no habits */}
+                {allHabits.length === 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex flex-col items-center justify-center py-16 px-8 rounded-3xl bg-gradient-to-br from-slate-50 to-slate-100 gap-5 dark:from-slate-800/50 dark:to-slate-900/50 border-2 border-dashed border-slate-300 dark:border-slate-700"
                   >
-                    <Plus className="w-4 h-4" strokeWidth={2.5} />
-                    Create Habit
-                  </button>
-                </div>
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                  {allHabits.map((habit) => (
-                    <HabitCard
-                      key={habit.id}
-                      habit={habit}
-                      isCompleted={habits[habit.id] || false}
-                      onToggle={toggleHabit}
-                      disabled={isFuture(selectedDate) && !isToday(selectedDate)}
-                    />
-                  ))}
-                </div>
+                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center mb-6 shadow-lg shadow-indigo-500/30">
+                      <Plus className="w-10 h-10 text-white" strokeWidth={2} />
+                    </div>
+                    <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-3">
+                      Start Your Journey!
+                    </h3>
+                    <p className="text-slate-500 dark:text-slate-400 text-center max-w-md mb-8 text-lg">
+                      Create your first habit to begin tracking your daily progress and building powerful routines.
+                    </p>
+                    <button
+                      onClick={() => setIsAddHabitOpen(true)}
+                      className="
+                        flex items-center gap-3 px-10 py-4 rounded-2xl
+                        bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600
+                        hover:from-indigo-500 hover:via-violet-500 hover:to-purple-500
+                        text-white font-bold text-lg
+                        shadow-2xl shadow-indigo-500/40 hover:shadow-indigo-500/60
+                        transition-all duration-300 hover:-translate-y-2 hover:scale-105
+                        animate-pulse hover:animate-none
+                      "
+                    >
+                      <Plus className="w-6 h-6" strokeWidth={2.5} />
+                      Create Your First Habit
+                    </button>
+                    <p className="text-sm  text-slate-400 dark:text-slate-500 mt-6">
+                      Build the life you want, one habit at a time
+                    </p>
+                  </motion.div>
+                )}
+
+                {/* Habits Grid - Show when habits exist */}
+                {allHabits.length > 0 && (
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                    {allHabits.map((habit) => (
+                      <HabitCard
+                        key={habit.id}
+                        habit={habit}
+                        isCompleted={habits[habit.id] || false}
+                        onToggle={toggleHabit}
+                        onDelete={handleDeleteHabit}
+                        disabled={isFuture(selectedDate) && !isToday(selectedDate)}
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
             </motion.div>
           )}
@@ -525,7 +611,7 @@ export default function Home() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <div className="mb-32 text-center">
+              <div className="mb-12 text-center">
                 <h2 className="text-2xl lg:text-3xl font-bold text-slate-900 dark:text-white mb-3">🏆 Achievements</h2>
                 <p className="text-slate-500 dark:text-slate-400 text-base lg:text-lg">
                   {rewards.filter(r => r.unlocked).length} of {rewards.length} unlocked
@@ -541,7 +627,7 @@ export default function Home() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <div className="mb-32">
+              <div className="mb-12">
                 <h2 className="text-2xl lg:text-3xl font-bold text-slate-900 dark:text-white mb-3">⚠️ Accountability Log</h2>
                 <p className="text-slate-500 dark:text-slate-400 text-base lg:text-lg">Learn from your mistakes</p>
               </div>

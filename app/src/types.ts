@@ -73,6 +73,7 @@ export interface Punishment {
     habitBroken: string;
     severity: PunishmentSeverity;
     completed?: boolean;
+    icon?: string;
 }
 
 // Re-export User type from auth library

@@ -16,61 +16,47 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Try MongoDB first, fallback to simple auth if connection fails
-        let user;
-        let useLocalStorage = false;
+        // Connect to MongoDB
+        const connectDB = (await import('@/lib/mongodb')).default;
+        const User = (await import('@/models/User')).default;
 
-        try {
-            const connectDB = (await import('@/lib/mongodb')).default;
-            const User = (await import('@/models/User')).default;
+        await connectDB();
+        console.log('✅ Connected to MongoDB for login');
 
-            await connectDB();
+        // Find user and include password field for comparison
+        const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
 
-            // Find user and include password field for comparison
-            user = await User.findOne({ email: email.toLowerCase() }).select('+password');
-
-            if (!user) {
-                return NextResponse.json(
-                    { error: 'Invalid email or password' },
-                    { status: 401 }
-                );
-            }
-
-            // Check if this is a Google-only account
-            if (user.provider === 'google' && !user.password) {
-                return NextResponse.json(
-                    { error: 'Please sign in with Google for this account' },
-                    { status: 401 }
-                );
-            }
-
-            // Compare passwords
-            const isMatch = await user.comparePassword(password);
-            if (!isMatch) {
-                return NextResponse.json(
-                    { error: 'Invalid email or password' },
-                    { status: 401 }
-                );
-            }
-        } catch (dbError) {
-            console.error('MongoDB connection failed, using simple auth:', dbError);
-            useLocalStorage = true;
-
-            // For localStorage fallback, create a simple user (password not verified)
-            // In production, this would need proper password storage
-            user = {
-                _id: `local_${Date.now()}`,
-                name: email.split('@')[0],
-                email: email.toLowerCase(),
-                provider: 'local',
-            };
+        if (!user) {
+            return NextResponse.json(
+                { error: 'Invalid email or password' },
+                { status: 401 }
+            );
         }
+
+        // Check if this is a Google-only account
+        if (user.provider === 'google' && !user.password) {
+            return NextResponse.json(
+                { error: 'Please sign in with Google for this account' },
+                { status: 401 }
+            );
+        }
+
+        // Compare passwords
+        const isMatch = await user.comparePassword(password);
+        if (!isMatch) {
+            return NextResponse.json(
+                { error: 'Invalid email or password' },
+                { status: 401 }
+            );
+        }
+
+        console.log('✅ User authenticated:', user._id);
 
         // Generate JWT token
         const token = jwt.sign(
             {
-                userId: user._id,
-                email: user.email || email.toLowerCase(),
+                userId: user._id.toString(),
+                email: user.email,
                 name: user.name
             },
             JWT_SECRET,
@@ -80,19 +66,19 @@ export async function POST(request: NextRequest) {
         // Return user data (without password)
         return NextResponse.json({
             user: {
-                id: user._id,
+                id: user._id.toString(),
                 name: user.name,
-                email: user.email || email.toLowerCase(),
+                email: user.email,
                 avatar: user.avatar || null,
                 provider: user.provider || 'local',
             },
             token,
-            localStorage: useLocalStorage,
+            message: 'Login successful!'
         });
     } catch (error: any) {
-        console.error('Login error:', error);
+        console.error('❌ Login error:', error);
         return NextResponse.json(
-            { error: 'Something went wrong. Please try again.' },
+            { error: error.message || 'Something went wrong. Please try again.' },
             { status: 500 }
         );
     }

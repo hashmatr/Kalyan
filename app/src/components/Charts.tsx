@@ -4,7 +4,6 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { motion } from 'framer-motion';
 import { format, subDays, startOfMonth, eachDayOfInterval, endOfMonth } from 'date-fns';
 import { DailyProgress } from '@/types';
-import { DEFAULT_HABITS } from '@/lib/constants';
 import { useTheme } from './ThemeContext';
 
 interface WeeklyChartProps {
@@ -152,18 +151,29 @@ interface HabitsPieChartProps {
 }
 
 export function HabitsPieChart({ progress }: HabitsPieChartProps) {
+    // Get unique habit IDs from progress data
+    const habitIds = new Set<string>();
+    Object.values(progress).forEach(p => {
+        Object.keys(p.habits).forEach(id => habitIds.add(id));
+    });
+
     // Calculate completion rate for each habit over time
-    const habitStats = DEFAULT_HABITS.map(habit => {
+    const habitStats = Array.from(habitIds).map(habitId => {
         const totalDays = Object.keys(progress).length;
         const completedDays = Object.values(progress).filter(
-            p => p.habits[habit.id]
+            p => p.habits[habitId]
         ).length;
 
         return {
-            name: habit.name,
+            name: habitId.replace('custom_', '').replace(/-/g, ' '),
             value: totalDays > 0 ? Math.round((completedDays / totalDays) * 100) : 0,
         };
     });
+
+    // If no habits, show a placeholder
+    if (habitStats.length === 0) {
+        habitStats.push({ name: 'No habits yet', value: 0 });
+    }
 
     const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'];
 

@@ -23,51 +23,55 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Try MongoDB first, fallback to simple auth if connection fails
-        let user;
-        let useLocalStorage = false;
+        // Connect to MongoDB
+        const connectDB = (await import('@/lib/mongodb')).default;
+        const User = (await import('@/models/User')).default;
+        const UserProgress = (await import('@/models/UserProgress')).default;
 
-        try {
-            const connectDB = (await import('@/lib/mongodb')).default;
-            const User = (await import('@/models/User')).default;
+        await connectDB();
+        console.log('✅ Connected to MongoDB for registration');
 
-            await connectDB();
-
-            // Check if user already exists
-            const existingUser = await User.findOne({ email: email.toLowerCase() });
-            if (existingUser) {
-                return NextResponse.json(
-                    { error: 'An account with this email already exists' },
-                    { status: 400 }
-                );
-            }
-
-            // Create new user in MongoDB
-            user = await User.create({
-                name,
-                email: email.toLowerCase(),
-                password,
-                provider: 'local',
-            });
-        } catch (dbError) {
-            console.error('MongoDB connection failed, using simple auth:', dbError);
-            useLocalStorage = true;
-
-            // Create a simple user object for localStorage-based auth
-            user = {
-                _id: `local_${Date.now()}`,
-                name,
-                email: email.toLowerCase(),
-                provider: 'local',
-            };
+        // Check if user already exists
+        const existingUser = await User.findOne({ email: email.toLowerCase() });
+        if (existingUser) {
+            return NextResponse.json(
+                { error: 'An account with this email already exists' },
+                { status: 400 }
+            );
         }
+
+        // Create new user in MongoDB
+        const user = await User.create({
+            name,
+            email: email.toLowerCase(),
+            password,
+            provider: 'local',
+        });
+
+        console.log('✅ User created in MongoDB:', user._id);
+
+        // Create initial UserProgress for the new user
+        await UserProgress.create({
+            userId: user._id.toString(),
+            habits: [],
+            punishments: [],
+            stats: {
+                totalDays: 0,
+                currentStreak: 0,
+                longestStreak: 0,
+                completionRate: 0,
+            },
+            calendarData: new Map(),
+        });
+
+        console.log('✅ UserProgress created for user:', user._id);
 
         // Generate JWT token
         const token = jwt.sign(
             {
-                userId: user._id,
-                email: user.email || email.toLowerCase(),
-                name: user.name || name
+                userId: user._id.toString(),
+                email: user.email,
+                name: user.name
             },
             JWT_SECRET,
             { expiresIn: '7d' }
@@ -76,17 +80,17 @@ export async function POST(request: NextRequest) {
         // Return user data
         return NextResponse.json({
             user: {
-                id: user._id,
-                name: user.name || name,
-                email: user.email || email.toLowerCase(),
+                id: user._id.toString(),
+                name: user.name,
+                email: user.email,
                 avatar: user.avatar || null,
-                provider: user.provider || 'local',
+                provider: user.provider,
             },
             token,
-            localStorage: useLocalStorage,
+            message: 'Registration successful! User saved to MongoDB.'
         });
     } catch (error: any) {
-        console.error('Registration error:', error);
+        console.error('❌ Registration error:', error);
 
         if (error.code === 11000) {
             return NextResponse.json(
@@ -96,7 +100,7 @@ export async function POST(request: NextRequest) {
         }
 
         return NextResponse.json(
-            { error: 'Something went wrong. Please try again.' },
+            { error: error.message || 'Something went wrong. Please try again.' },
             { status: 500 }
         );
     }

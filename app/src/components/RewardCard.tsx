@@ -153,7 +153,7 @@ export function RewardsGrid({ rewards }: RewardsGridProps) {
     const tiers = ['bronze', 'silver', 'gold', 'platinum', 'diamond', 'legendary'];
 
     return (
-        <div className="space-y-96">
+        <div className="space-y-24">
             {tiers.map((tier, tierIndex) => {
                 const tierRewards = rewards.filter(r => r.tier === tier);
                 if (tierRewards.length === 0) return null;
@@ -165,12 +165,11 @@ export function RewardsGrid({ rewards }: RewardsGridProps) {
                     <motion.div
                         key={tier}
                         initial={{ opacity: 0, y: 40 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true, margin: "-100px" }}
+                        animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: tierIndex * 0.1 }}
                     >
                         {/* Section Header */}
-                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-24 border-b border-slate-200 dark:border-slate-800 pb-8">
+                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 border-b border-slate-200 dark:border-slate-800 pb-8">
                             <div className="flex items-center gap-5">
                                 {/* Tier Icon/Image Preview */}
                                 <div className="relative w-16 h-16">

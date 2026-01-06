@@ -1,71 +1,7 @@
 import { DailyHabit, Reward, PunishmentSeverity, TierColors } from '@/types';
 
-export const DEFAULT_HABITS: DailyHabit[] = [
-    {
-        id: 'wake-5am',
-        name: 'Wake Up at 5 AM',
-        description: 'Rise early to conquer the day',
-        icon: 'Sunrise',
-        completed: false,
-        category: 'discipline',
-    },
-    {
-        id: 'prayer',
-        name: 'Prayer',
-        description: 'Connect spiritually at least once today',
-        icon: 'Heart',
-        completed: false,
-        category: 'spiritual',
-    },
-    {
-        id: 'no-fap',
-        name: 'No PMO',
-        description: 'Stay disciplined and preserve energy',
-        icon: 'Shield',
-        completed: false,
-        category: 'discipline',
-    },
-    {
-        id: 'exercise',
-        name: 'Morning Walk / Gym',
-        description: 'Physical activity - walk or workout',
-        icon: 'Dumbbell',
-        completed: false,
-        category: 'physical',
-    },
-    {
-        id: 'leetcode',
-        name: 'LeetCode Problem',
-        description: 'Solve at least one coding problem',
-        icon: 'Code',
-        completed: false,
-        category: 'mental',
-    },
-    {
-        id: 'deep-work',
-        name: '2 Hours Deep Work',
-        description: 'Focused, distraction-free study time',
-        icon: 'Brain',
-        completed: false,
-        category: 'mental',
-    },
-    {
-        id: 'skill-work',
-        name: '1 Hour Skill Development',
-        description: 'Work on improving a valuable skill',
-        icon: 'Rocket',
-        completed: false,
-        category: 'mental',
-    },
-    {
-        id: 'healthy-eating',
-        name: 'No Sugar & Fried Food',
-        description: 'Stay away from junk food today',
-        icon: 'Apple',
-        completed: false,
-        category: 'physical',
-    },
-];
+// Empty by default - users create their own personal habits
+export const DEFAULT_HABITS: DailyHabit[] = [];
 
 export const REWARDS: Reward[] = [
     // Bronze Tier (7-14 days)
@@ -207,15 +143,24 @@ export const REWARDS: Reward[] = [
     },
 ];
 
+export const PHYSICAL_PUNISHMENTS = [
+    { name: '50 Push-ups', description: 'Drop and give me 50!', icon: '💪' },
+    { name: '100 Squats', description: 'Build those legs. 100 squats now.', icon: '🦵' },
+    { name: '5 Min Plank', description: 'Core strength test. Hold it.', icon: '⏱️' },
+    { name: '1km Run', description: 'Go for a quick 1km run.', icon: '🏃' },
+    { name: '50 Burpees', description: 'Full body punishment. 50 burpees.', icon: '🔥' },
+    { name: '100 Jumping Jacks', description: 'Get the heart rate up.', icon: '⚡' },
+];
+
 export const PUNISHMENTS: Record<PunishmentSeverity, { name: string; description: string; icon: string }> = {
     warning: {
-        name: 'Yellow Card',
-        description: 'A warning for missing a habit. Stay focused!',
+        name: 'Warning',
+        description: 'You missed a habit. Be careful.',
         icon: '⚠️',
     },
     minor: {
-        name: 'Push-Up Penalty',
-        description: 'Complete 50 push-ups to redeem yourself.',
+        name: 'Exercise Penalty',
+        description: 'Complete a physical challenge to redeem yourself.',
         icon: '💢',
     },
     major: {

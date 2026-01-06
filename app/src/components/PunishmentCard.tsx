@@ -191,19 +191,21 @@ export function PunishmentList({ punishments, onComplete }: PunishmentListProps)
                                 </div>
                             </div>
 
-                            {!isCompleted && onComplete && (
+                            {onComplete && (
                                 <button
                                     onClick={() => onComplete(punishment.id)}
-                                    className="
+                                    className={`
                                         md:self-center w-full md:w-auto px-4 py-2 rounded-lg
-                                        bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200
-                                        hover:bg-emerald-50 dark:hover:bg-emerald-900/30 hover:text-emerald-600 dark:hover:text-emerald-400 hover:border-emerald-200 dark:hover:border-emerald-700
-                                        text-sm font-medium transition-all
+                                        border text-sm font-medium transition-all
                                         flex items-center justify-center gap-2
-                                    "
+                                        ${isCompleted
+                                            ? 'bg-emerald-100 dark:bg-emerald-900/30 border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 hover:border-red-200 dark:hover:border-red-700'
+                                            : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 hover:text-emerald-600 dark:hover:text-emerald-400 hover:border-emerald-200 dark:hover:border-emerald-700'
+                                        }
+                                    `}
                                 >
-                                    <CheckCircle className="w-4 h-4" />
-                                    Mark Done
+                                    {isCompleted ? <X className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
+                                    {isCompleted ? 'Undo' : 'Mark Done'}
                                 </button>
                             )}
                         </div>
