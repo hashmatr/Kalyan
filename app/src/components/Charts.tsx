@@ -3,17 +3,15 @@
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
 import { motion } from 'framer-motion';
 import { format, subDays, startOfMonth, eachDayOfInterval, endOfMonth } from 'date-fns';
-import { DailyProgress } from '@/types';
-import { useTheme } from './ThemeContext';
+import { DailyProgress, DailyHabit } from '@/types';
 
 interface WeeklyChartProps {
     progress: Record<string, DailyProgress>;
 }
 
 export function WeeklyChart({ progress }: WeeklyChartProps) {
-    const { theme } = useTheme();
-    const textColor = theme === 'dark' ? '#cbd5e1' : '#475569';
-    const gridColor = theme === 'dark' ? '#334155' : '#e2e8f0';
+    const textColor = '#475569';
+    const gridColor = '#e2e8f0';
 
     const last7Days = Array.from({ length: 7 }, (_, i) => {
         const date = subDays(new Date(), 6 - i);
@@ -32,9 +30,9 @@ export function WeeklyChart({ progress }: WeeklyChartProps) {
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm"
+            className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm"
         >
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Weekly Progress</h3>
+            <h3 className="text-lg font-semibold text-slate-900 mb-4">Weekly Progress</h3>
             <ResponsiveContainer width="100%" height={200}>
                 <AreaChart data={last7Days}>
                     <defs>
@@ -83,9 +81,8 @@ interface MonthlyChartProps {
 }
 
 export function MonthlyChart({ progress }: MonthlyChartProps) {
-    const { theme } = useTheme();
-    const textColor = theme === 'dark' ? '#cbd5e1' : '#475569';
-    const gridColor = theme === 'dark' ? '#334155' : '#e2e8f0';
+    const textColor = '#475569';
+    const gridColor = '#e2e8f0';
 
     const currentMonth = new Date();
     const monthStart = startOfMonth(currentMonth);
@@ -106,9 +103,9 @@ export function MonthlyChart({ progress }: MonthlyChartProps) {
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm"
+            className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm"
         >
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
+            <h3 className="text-lg font-semibold text-slate-900 mb-4">
                 {format(currentMonth, 'MMMM yyyy')} Overview
             </h3>
             <ResponsiveContainer width="100%" height={200}>
@@ -148,9 +145,10 @@ export function MonthlyChart({ progress }: MonthlyChartProps) {
 
 interface HabitsPieChartProps {
     progress: Record<string, DailyProgress>;
+    habits?: DailyHabit[];
 }
 
-export function HabitsPieChart({ progress }: HabitsPieChartProps) {
+export function HabitsPieChart({ progress, habits = [] }: HabitsPieChartProps) {
     // Get unique habit IDs from progress data
     const habitIds = new Set<string>();
     Object.values(progress).forEach(p => {
@@ -164,15 +162,25 @@ export function HabitsPieChart({ progress }: HabitsPieChartProps) {
             p => p.habits[habitId]
         ).length;
 
+        // Try to find habit name from props, or fallback to ID formatting
+        const habitDef = habits.find(h => h.id === habitId);
+        let displayName = habitDef ? habitDef.name : habitId.replace('custom_', '').replace(/-/g, ' ');
+
+        // If it's a timestamp (numeric ID), and we can't find it, format it generically
+        if (!habitDef && /^\d+$/.test(habitId)) {
+            displayName = 'deleted_habit';
+        }
+
         return {
-            name: habitId.replace('custom_', '').replace(/-/g, ' '),
+            name: displayName,
             value: totalDays > 0 ? Math.round((completedDays / totalDays) * 100) : 0,
+            originalId: habitId
         };
-    });
+    }).filter(h => h.name !== 'deleted_habit' && h.value > 0); // Hide deleted/zero habits to clean up chart
 
     // If no habits, show a placeholder
     if (habitStats.length === 0) {
-        habitStats.push({ name: 'No habits yet', value: 0 });
+        habitStats.push({ name: 'No habits yet', value: 0, originalId: 'placeholder' });
     }
 
     const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'];
@@ -181,9 +189,9 @@ export function HabitsPieChart({ progress }: HabitsPieChartProps) {
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm"
+            className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm"
         >
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Habit Completion Rates</h3>
+            <h3 className="text-lg font-semibold text-slate-900 mb-4">Habit Completion Rates</h3>
             <div className="flex flex-col lg:flex-row items-center gap-6">
                 <ResponsiveContainer width="100%" height={200}>
                     <PieChart>
@@ -219,7 +227,7 @@ export function HabitsPieChart({ progress }: HabitsPieChartProps) {
                                 className="w-3 h-3 rounded-full"
                                 style={{ backgroundColor: COLORS[index % COLORS.length] }}
                             />
-                            <span className="text-xs text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                            <span className="text-xs text-slate-600 whitespace-nowrap">
                                 {habit.name.split(' ').slice(0, 2).join(' ')}
                             </span>
                         </div>
@@ -236,9 +244,8 @@ interface YearlyChartProps {
 }
 
 export function YearlyChart({ monthlyScores, year }: YearlyChartProps) {
-    const { theme } = useTheme();
-    const textColor = theme === 'dark' ? '#cbd5e1' : '#475569';
-    const gridColor = theme === 'dark' ? '#334155' : '#e2e8f0';
+    const textColor = '#475569';
+    const gridColor = '#e2e8f0';
 
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -251,9 +258,9 @@ export function YearlyChart({ monthlyScores, year }: YearlyChartProps) {
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm"
+            className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm"
         >
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">{year} Performance</h3>
+            <h3 className="text-lg font-semibold text-slate-900 mb-4">{year} Performance</h3>
             <ResponsiveContainer width="100%" height={200}>
                 <LineChart data={data}>
                     <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />

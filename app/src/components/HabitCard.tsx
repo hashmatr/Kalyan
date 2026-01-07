@@ -12,17 +12,17 @@ const categoryGradients: Record<string, string> = {
 };
 
 const categoryBgColors: Record<string, string> = {
-    spiritual: 'bg-purple-500/5 dark:bg-purple-500/10 border-purple-200 dark:border-purple-500/20 hover:border-purple-500/40',
-    physical: 'bg-green-500/5 dark:bg-green-500/10 border-green-200 dark:border-green-500/20 hover:border-green-500/40',
-    mental: 'bg-blue-500/5 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/20 hover:border-blue-500/40',
-    discipline: 'bg-orange-500/5 dark:bg-orange-500/10 border-orange-200 dark:border-orange-500/20 hover:border-orange-500/40',
+    spiritual: 'bg-purple-500/5 border-purple-200 hover:border-purple-500/40',
+    physical: 'bg-green-500/5 border-green-200 hover:border-green-500/40',
+    mental: 'bg-blue-500/5 border-blue-200 hover:border-blue-500/40',
+    discipline: 'bg-orange-500/5 border-orange-200 hover:border-orange-500/40',
 };
 
 const categoryBadgeColors: Record<string, string> = {
-    spiritual: 'bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-300 border-purple-200 dark:border-purple-500/30',
-    physical: 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-300 border-green-200 dark:border-green-500/30',
-    mental: 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300 border-blue-200 dark:border-blue-500/30',
-    discipline: 'bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-300 border-orange-200 dark:border-orange-500/30',
+    spiritual: 'bg-purple-100 text-purple-700 border-purple-200',
+    physical: 'bg-green-100 text-green-700 border-green-200',
+    mental: 'bg-blue-100 text-blue-700 border-blue-200',
+    discipline: 'bg-orange-100 text-orange-700 border-orange-200',
 };
 
 interface HabitCardProps {
@@ -46,7 +46,7 @@ export function HabitCard({ habit, isCompleted, onToggle, onDelete, disabled }: 
         relative rounded-2xl cursor-pointer transition-all duration-300
         border overflow-hidden group
         ${isCompleted
-                    ? 'bg-emerald-50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-500/30'
+                    ? 'bg-emerald-50 border-emerald-200'
                     : categoryBgColors[habit.category]
                 }
         ${disabled ? 'opacity-50 cursor-not-allowed' : 'shadow-sm hover:shadow-md'}
@@ -63,7 +63,7 @@ export function HabitCard({ habit, isCompleted, onToggle, onDelete, disabled }: 
                     }}
                     className="
                         absolute top-3 right-3 p-1.5 rounded-lg
-                        text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20
+                        text-slate-400 hover:text-red-500 hover:bg-red-50
                         opacity-0 group-hover:opacity-100 transition-all duration-200
                         z-10
                     "
@@ -94,7 +94,7 @@ export function HabitCard({ habit, isCompleted, onToggle, onDelete, disabled }: 
             border-2 transition-all duration-300
             ${isCompleted
                             ? 'border-emerald-500 bg-emerald-500 shadow-lg shadow-emerald-500/30 scale-110'
-                            : 'border-slate-200 dark:border-slate-700 group-hover:border-slate-300 dark:group-hover:border-slate-600'
+                            : 'border-slate-200 group-hover:border-slate-300'
                         }
           `}>
                         {isCompleted && <LucideIcons.Check className="w-5 h-5 text-white" strokeWidth={3} />}
@@ -104,7 +104,7 @@ export function HabitCard({ habit, isCompleted, onToggle, onDelete, disabled }: 
                 {/* Title */}
                 <h3 className={`
           font-bold text-lg leading-tight mb-3
-          ${isCompleted ? 'text-emerald-700 dark:text-emerald-400 line-through decoration-2 opacity-75' : 'text-slate-900 dark:text-white'}
+          ${isCompleted ? 'text-emerald-700 line-through decoration-2 opacity-75' : 'text-slate-900'}
           line-clamp-2
         `}>
                     {habit.name}

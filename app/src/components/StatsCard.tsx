@@ -16,6 +16,7 @@ export function StatsCard({ stats }: StatsCardProps) {
             value: stats.currentStreak,
             suffix: 'days',
             color: 'from-orange-500 to-red-600',
+            textGradient: 'text-gradient-beast',
         },
         {
             icon: Trophy,
@@ -23,6 +24,7 @@ export function StatsCard({ stats }: StatsCardProps) {
             value: stats.longestStreak,
             suffix: 'days',
             color: 'from-yellow-500 to-amber-600',
+            textGradient: 'text-gradient-orange',
         },
         {
             icon: Target,
@@ -30,6 +32,7 @@ export function StatsCard({ stats }: StatsCardProps) {
             value: stats.perfectDays,
             suffix: '',
             color: 'from-emerald-500 to-green-600',
+            textGradient: 'text-gradient-green',
         },
         {
             icon: TrendingUp,
@@ -37,6 +40,7 @@ export function StatsCard({ stats }: StatsCardProps) {
             value: stats.averageScore,
             suffix: '%',
             color: 'from-blue-500 to-cyan-600',
+            textGradient: 'text-gradient-blue',
         },
         {
             icon: Calendar,
@@ -44,6 +48,7 @@ export function StatsCard({ stats }: StatsCardProps) {
             value: stats.totalDaysTracked,
             suffix: '',
             color: 'from-purple-500 to-indigo-600',
+            textGradient: 'text-gradient-purple',
         },
         {
             icon: Zap,
@@ -51,6 +56,7 @@ export function StatsCard({ stats }: StatsCardProps) {
             value: stats.rewardsUnlocked,
             suffix: '',
             color: 'from-pink-500 to-rose-600',
+            textGradient: 'text-gradient-pink',
         },
     ];
 
@@ -73,14 +79,14 @@ export function StatsCard({ stats }: StatsCardProps) {
 
                     <div>
                         <div className="flex items-baseline gap-1.5">
-                            <span className="text-2xl lg:text-3xl font-bold text-slate-900 dark:text-white">
+                            <span className={`text-2xl lg:text-3xl font-bold ${item.textGradient}`}>
                                 {item.value}
                             </span>
                             {item.suffix && (
-                                <span className="text-sm text-slate-500 dark:text-slate-400">{item.suffix}</span>
+                                <span className="text-sm text-slate-500">{item.suffix}</span>
                             )}
                         </div>
-                        <p className="text-sm text-slate-400 dark:text-slate-500 mt-1.5">{item.label}</p>
+                        <p className="text-sm text-slate-400 mt-1.5">{item.label}</p>
                     </div>
                 </motion.div>
             ))}

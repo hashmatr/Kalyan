@@ -8,11 +8,8 @@ interface ProgressRingProps {
     strokeWidth?: number;
 }
 
-import { useTheme } from './ThemeContext';
-
 export function ProgressRing({ progress, size = 120, strokeWidth = 8 }: ProgressRingProps) {
-    const { theme } = useTheme();
-    const bgStroke = theme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+    const bgStroke = 'rgba(0, 0, 0, 0.1)';
     const radius = (size - strokeWidth) / 2;
     const circumference = radius * 2 * Math.PI;
     const offset = circumference - (progress / 100) * circumference;
@@ -57,14 +54,14 @@ export function ProgressRing({ progress, size = 120, strokeWidth = 8 }: Progress
             {/* Center text */}
             <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <motion.span
-                    className="text-3xl font-bold text-slate-900 dark:text-white"
+                    className="text-3xl font-bold text-slate-900"
                     initial={{ opacity: 0, scale: 0.5 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.3 }}
                 >
                     {progress}%
                 </motion.span>
-                <span className="text-xs text-slate-500 dark:text-slate-400 mt-1">Complete</span>
+                <span className="text-xs text-slate-500 mt-1">Complete</span>
             </div>
         </div>
     );
@@ -81,11 +78,11 @@ export function ProgressBar({ progress, label, color = 'from-purple-500 to-indig
         <div>
             {label && (
                 <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm text-slate-600 dark:text-slate-400">{label}</span>
-                    <span className="text-sm font-semibold text-slate-900 dark:text-white">{progress}%</span>
+                    <span className="text-sm text-slate-600">{label}</span>
+                    <span className="text-sm font-semibold text-slate-900">{progress}%</span>
                 </div>
             )}
-            <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+            <div className="h-3 bg-slate-200 rounded-full overflow-hidden">
                 <motion.div
                     className={`h-full rounded-full bg-gradient-to-r ${color}`}
                     initial={{ width: 0 }}

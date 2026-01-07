@@ -113,8 +113,8 @@ export function PunishmentList({ punishments, onComplete }: PunishmentListProps)
         return (
             <div className="text-center py-12">
                 <Flame className="w-12 h-12 text-emerald-500 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-2">Clean Record!</h3>
-                <p className="text-slate-500 dark:text-slate-400">No punishments yet. Keep up the discipline!</p>
+                <h3 className="text-xl font-semibold text-slate-900 mb-2">Clean Record!</h3>
+                <p className="text-slate-500">No punishments yet. Keep up the discipline!</p>
             </div>
         );
     }
@@ -166,7 +166,7 @@ export function PunishmentList({ punishments, onComplete }: PunishmentListProps)
                                     <div className="flex flex-wrap items-center gap-2 mb-1">
                                         <h4 className={`
                                             font-semibold 
-                                            ${isCompleted ? 'text-emerald-600 dark:text-emerald-400 line-through' : 'text-slate-900 dark:text-white'}
+                                            ${isCompleted ? 'text-emerald-600 line-through' : 'text-slate-900'}
                                         `}>
                                             {punishmentInfo.name}
                                         </h4>
@@ -183,8 +183,8 @@ export function PunishmentList({ punishments, onComplete }: PunishmentListProps)
                                             {isCompleted ? 'Resolved' : punishment.severity}
                                         </span>
                                     </div>
-                                    <p className="text-sm text-slate-600 dark:text-slate-400">{punishment.habitBroken}</p>
-                                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 flex items-center gap-1">
+                                    <p className="text-sm text-slate-600">{punishment.habitBroken}</p>
+                                    <p className="text-xs text-slate-400 mt-1 flex items-center gap-1">
                                         <Clock className="w-3 h-3" />
                                         {punishment.triggeredDate}
                                     </p>
@@ -199,8 +199,8 @@ export function PunishmentList({ punishments, onComplete }: PunishmentListProps)
                                         border text-sm font-medium transition-all
                                         flex items-center justify-center gap-2
                                         ${isCompleted
-                                            ? 'bg-emerald-100 dark:bg-emerald-900/30 border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 hover:border-red-200 dark:hover:border-red-700'
-                                            : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 hover:text-emerald-600 dark:hover:text-emerald-400 hover:border-emerald-200 dark:hover:border-emerald-700'
+                                            ? 'bg-emerald-100 border-emerald-200 text-emerald-700 hover:bg-red-50 hover:text-red-600 hover:border-red-200'
+                                            : 'bg-white border-slate-200 text-slate-700 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200'
                                         }
                                     `}
                                 >

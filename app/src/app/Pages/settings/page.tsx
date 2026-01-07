@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { User, Mail, Lock, ArrowLeft, Save, Camera, Moon, Sun, Bell, Shield } from 'lucide-react';
+import { User, Mail, Lock, ArrowLeft, Save, Camera, Shield } from 'lucide-react';
 
 interface UserData {
     id: string;
@@ -18,7 +18,6 @@ export default function SettingsPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
-    const [isDarkMode, setIsDarkMode] = useState(true);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [formData, setFormData] = useState({
@@ -31,12 +30,6 @@ export default function SettingsPage() {
 
     useEffect(() => {
         setMounted(true);
-
-        // Check theme preference
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme) {
-            setIsDarkMode(savedTheme === 'dark');
-        }
 
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
@@ -60,8 +53,6 @@ export default function SettingsPage() {
             setActiveTab('profile');
         } else if (window.location.hash === '#password') {
             setActiveTab('password');
-        } else if (window.location.hash === '#appearance') {
-            setActiveTab('appearance');
         }
     }, []);
 
@@ -146,12 +137,7 @@ export default function SettingsPage() {
         }
     };
 
-    const toggleTheme = () => {
-        const newTheme = !isDarkMode;
-        setIsDarkMode(newTheme);
-        localStorage.setItem('theme', newTheme ? 'dark' : 'light');
-        document.documentElement.classList.toggle('dark', newTheme);
-    };
+
 
     const getInitials = (name: string) => {
         return name
@@ -162,20 +148,20 @@ export default function SettingsPage() {
             .slice(0, 2);
     };
 
-    // Theme colors
+    // Light theme colors (always light)
     const theme = {
-        bg: isDarkMode ? '#0f172a' : '#f8fafc',
-        cardBg: isDarkMode ? 'rgba(255,255,255,0.05)' : 'white',
-        text: isDarkMode ? 'white' : '#0f172a',
-        textMuted: isDarkMode ? 'rgba(255,255,255,0.6)' : '#64748b',
-        border: isDarkMode ? 'rgba(255,255,255,0.1)' : '#e2e8f0',
-        inputBg: isDarkMode ? 'rgba(255,255,255,0.05)' : '#f1f5f9',
-        inputBorder: isDarkMode ? 'rgba(255,255,255,0.2)' : '#e2e8f0',
+        bg: '#f8fafc',
+        cardBg: 'white',
+        text: '#0f172a',
+        textMuted: '#64748b',
+        border: '#e2e8f0',
+        inputBg: '#f1f5f9',
+        inputBorder: '#e2e8f0',
     };
 
     if (!mounted) {
         return (
-            <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#0f172a' }}>
+            <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f8fafc' }}>
                 <div className="spinner-wheel" />
             </div>
         );
@@ -188,24 +174,24 @@ export default function SettingsPage() {
     return (
         <>
             <style jsx global>{`
-                /* Black Scrollbar */
+                /* Light Scrollbar */
                 ::-webkit-scrollbar {
                     width: 10px;
                     height: 10px;
                 }
                 ::-webkit-scrollbar-track {
-                    background: ${isDarkMode ? '#1e293b' : '#f1f5f9'};
+                    background: #f1f5f9;
                 }
                 ::-webkit-scrollbar-thumb {
-                    background: ${isDarkMode ? '#0f172a' : '#cbd5e1'};
+                    background: #cbd5e1;
                     border-radius: 5px;
                 }
                 ::-webkit-scrollbar-thumb:hover {
-                    background: ${isDarkMode ? '#334155' : '#94a3b8'};
+                    background: #94a3b8;
                 }
                 * {
                     scrollbar-width: thin;
-                    scrollbar-color: ${isDarkMode ? '#0f172a #1e293b' : '#cbd5e1 #f1f5f9'};
+                    scrollbar-color: #cbd5e1 #f1f5f9;
                 }
                 @keyframes spin {
                     to { transform: rotate(360deg); }
@@ -213,8 +199,8 @@ export default function SettingsPage() {
                 .spinner-wheel {
                     width: 32px;
                     height: 32px;
-                    border: 2px solid rgba(255,255,255,0.3);
-                    border-top-color: white;
+                    border: 2px solid rgba(0,0,0,0.1);
+                    border-top-color: #6366f1;
                     border-radius: 50%;
                     animation: spin 1s linear infinite;
                 }
@@ -255,24 +241,6 @@ export default function SettingsPage() {
                         Back to Dashboard
                     </button>
 
-                    {/* Theme Toggle in Header */}
-                    <button
-                        onClick={toggleTheme}
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 8,
-                            padding: '8px 16px',
-                            borderRadius: 8,
-                            border: `1px solid ${theme.border}`,
-                            backgroundColor: 'transparent',
-                            color: theme.text,
-                            cursor: 'pointer'
-                        }}
-                    >
-                        {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
-                        {isDarkMode ? 'Light Mode' : 'Dark Mode'}
-                    </button>
                 </header>
 
                 <div style={{ maxWidth: 900, margin: '0 auto', padding: '40px 24px' }}>
@@ -289,7 +257,6 @@ export default function SettingsPage() {
                             {[
                                 { id: 'profile', label: 'Profile', icon: User },
                                 { id: 'password', label: 'Security', icon: Lock },
-                                { id: 'appearance', label: 'Appearance', icon: Moon },
                             ].map(tab => (
                                 <button
                                     key={tab.id}
@@ -618,60 +585,7 @@ export default function SettingsPage() {
                             </motion.div>
                         )}
 
-                        {/* Appearance Tab */}
-                        {activeTab === 'appearance' && (
-                            <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ duration: 0.3 }}
-                            >
-                                <div style={{
-                                    backgroundColor: theme.cardBg,
-                                    borderRadius: 16,
-                                    padding: 32,
-                                    border: `1px solid ${theme.border}`
-                                }}>
-                                    <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 24 }}>Theme</h3>
-                                    <p style={{ color: theme.textMuted, marginBottom: 24 }}>Choose your preferred color scheme</p>
 
-                                    <div style={{ display: 'flex', gap: 16 }}>
-                                        <button
-                                            onClick={() => { setIsDarkMode(false); localStorage.setItem('theme', 'light'); }}
-                                            style={{
-                                                flex: 1,
-                                                padding: 24,
-                                                borderRadius: 12,
-                                                border: `2px solid ${!isDarkMode ? '#6366f1' : theme.border}`,
-                                                backgroundColor: '#f8fafc',
-                                                cursor: 'pointer',
-                                                transition: 'all 0.2s ease'
-                                            }}
-                                        >
-                                            <Sun size={32} color="#f59e0b" style={{ marginBottom: 12 }} />
-                                            <p style={{ fontWeight: 600, color: '#0f172a', margin: 0 }}>Light</p>
-                                            <p style={{ fontSize: 12, color: '#64748b', margin: '4px 0 0' }}>Bright and clean</p>
-                                        </button>
-
-                                        <button
-                                            onClick={() => { setIsDarkMode(true); localStorage.setItem('theme', 'dark'); }}
-                                            style={{
-                                                flex: 1,
-                                                padding: 24,
-                                                borderRadius: 12,
-                                                border: `2px solid ${isDarkMode ? '#6366f1' : theme.border}`,
-                                                backgroundColor: '#0f172a',
-                                                cursor: 'pointer',
-                                                transition: 'all 0.2s ease'
-                                            }}
-                                        >
-                                            <Moon size={32} color="#a5b4fc" style={{ marginBottom: 12 }} />
-                                            <p style={{ fontWeight: 600, color: 'white', margin: 0 }}>Dark</p>
-                                            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', margin: '4px 0 0' }}>Easy on the eyes</p>
-                                        </button>
-                                    </div>
-                                </div>
-                            </motion.div>
-                        )}
                     </motion.div>
                 </div>
             </div>

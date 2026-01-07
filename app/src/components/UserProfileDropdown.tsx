@@ -72,12 +72,12 @@ export default function UserProfileDropdown({ onLogout }: UserProfileDropdownPro
                     gap: 8,
                     padding: '8px 16px',
                     borderRadius: 8,
-                    backgroundColor: 'rgba(255,255,255,0.1)',
-                    color: 'white',
+                    backgroundColor: '#f1f5f9',
+                    color: '#1e293b',
                     textDecoration: 'none',
                     fontSize: 14,
                     fontWeight: 500,
-                    border: '1px solid rgba(255,255,255,0.2)',
+                    border: '1px solid #e2e8f0',
                     transition: 'all 0.2s ease'
                 }}
             >
@@ -98,8 +98,8 @@ export default function UserProfileDropdown({ onLogout }: UserProfileDropdownPro
                     gap: 10,
                     padding: '6px 12px',
                     borderRadius: 50,
-                    backgroundColor: 'rgba(255,255,255,0.1)',
-                    border: '1px solid rgba(255,255,255,0.2)',
+                    backgroundColor: '#f1f5f9',
+                    border: '1px solid #e2e8f0',
                     cursor: 'pointer',
                     transition: 'all 0.2s ease'
                 }}
@@ -131,7 +131,7 @@ export default function UserProfileDropdown({ onLogout }: UserProfileDropdownPro
                     )}
                 </div>
                 <span style={{
-                    color: 'white',
+                    color: '#1e293b',
                     fontSize: 14,
                     fontWeight: 500,
                     maxWidth: 120,
@@ -143,7 +143,7 @@ export default function UserProfileDropdown({ onLogout }: UserProfileDropdownPro
                 </span>
                 <ChevronDown
                     size={16}
-                    color="rgba(255,255,255,0.7)"
+                    color="#64748b"
                     style={{
                         transition: 'transform 0.2s ease',
                         transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)'
@@ -164,10 +164,10 @@ export default function UserProfileDropdown({ onLogout }: UserProfileDropdownPro
                             top: 'calc(100% + 8px)',
                             right: 0,
                             width: 240,
-                            backgroundColor: '#1e293b',
+                            backgroundColor: '#ffffff',
                             borderRadius: 12,
-                            boxShadow: '0 10px 40px rgba(0,0,0,0.4)',
-                            border: '1px solid rgba(255,255,255,0.1)',
+                            boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
+                            border: '1px solid #e2e8f0',
                             overflow: 'hidden',
                             zIndex: 1000
                         }}
@@ -175,10 +175,10 @@ export default function UserProfileDropdown({ onLogout }: UserProfileDropdownPro
                         {/* User Info */}
                         <div style={{
                             padding: 16,
-                            borderBottom: '1px solid rgba(255,255,255,0.1)'
+                            borderBottom: '1px solid #e2e8f0'
                         }}>
                             <p style={{
-                                color: 'white',
+                                color: '#1e293b',
                                 fontWeight: 600,
                                 fontSize: 14,
                                 margin: 0,
@@ -187,7 +187,7 @@ export default function UserProfileDropdown({ onLogout }: UserProfileDropdownPro
                                 {user.name}
                             </p>
                             <p style={{
-                                color: 'rgba(255,255,255,0.6)',
+                                color: '#64748b',
                                 fontSize: 13,
                                 margin: 0,
                                 overflow: 'hidden',
@@ -213,13 +213,13 @@ export default function UserProfileDropdown({ onLogout }: UserProfileDropdownPro
                                     backgroundColor: 'transparent',
                                     border: 'none',
                                     borderRadius: 8,
-                                    color: 'rgba(255,255,255,0.8)',
+                                    color: '#475569',
                                     fontSize: 14,
                                     cursor: 'pointer',
                                     transition: 'all 0.15s ease'
                                 }}
                                 onMouseEnter={(e) => {
-                                    e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                                    e.currentTarget.style.backgroundColor = '#f1f5f9';
                                 }}
                                 onMouseLeave={(e) => {
                                     e.currentTarget.style.backgroundColor = 'transparent';
@@ -243,13 +243,13 @@ export default function UserProfileDropdown({ onLogout }: UserProfileDropdownPro
                                     backgroundColor: 'transparent',
                                     border: 'none',
                                     borderRadius: 8,
-                                    color: 'rgba(255,255,255,0.8)',
+                                    color: '#475569',
                                     fontSize: 14,
                                     cursor: 'pointer',
                                     transition: 'all 0.15s ease'
                                 }}
                                 onMouseEnter={(e) => {
-                                    e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)';
+                                    e.currentTarget.style.backgroundColor = '#f1f5f9';
                                 }}
                                 onMouseLeave={(e) => {
                                     e.currentTarget.style.backgroundColor = 'transparent';
@@ -276,7 +276,7 @@ export default function UserProfileDropdown({ onLogout }: UserProfileDropdownPro
                                     transition: 'all 0.15s ease'
                                 }}
                                 onMouseEnter={(e) => {
-                                    e.currentTarget.style.backgroundColor = 'rgba(248,113,113,0.1)';
+                                    e.currentTarget.style.backgroundColor = '#fef2f2';
                                 }}
                                 onMouseLeave={(e) => {
                                     e.currentTarget.style.backgroundColor = 'transparent';

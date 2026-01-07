@@ -55,13 +55,19 @@ export async function POST(request: NextRequest) {
             userId: user._id.toString(),
             habits: [],
             punishments: [],
+            rewards: [],
+            dailyProgress: new Map(),
             stats: {
-                totalDays: 0,
                 currentStreak: 0,
                 longestStreak: 0,
-                completionRate: 0,
+                totalDaysTracked: 0,
+                perfectDays: 0,
+                totalScore: 0,
+                averageScore: 0,
+                rewardsUnlocked: 0,
+                punishmentsCount: 0,
+                startDate: new Date().toISOString().split('T')[0],
             },
-            calendarData: new Map(),
         });
 
         console.log('✅ UserProgress created for user:', user._id);

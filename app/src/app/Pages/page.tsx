@@ -29,14 +29,25 @@ import { CalendarView } from '@/components/CalendarView';
 import { WeeklyChart, MonthlyChart, HabitsPieChart, YearlyChart } from '@/components/Charts';
 import { PunishmentModal, PunishmentList } from '@/components/PunishmentCard';
 import { CelebrationModal } from '@/components/CelebrationModal';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import { ThemeProvider } from '@/components/ThemeContext';
 import UserProfileDropdown from '@/components/UserProfileDropdown';
+import { ToastProvider, useToast } from '@/components/Toast';
+import { YearlyHeatmap } from '@/components/YearlyHeatmap';
+import { Onboarding, useOnboarding } from '@/components/Onboarding';
+import { ReminderBellButton, HabitRemindersModal } from '@/components/HabitReminders';
+import { LoadingScreen } from '@/components/LoadingScreen';
+import {
+  SmoothScrollProvider,
+  useScrollAnimation,
+  useStaggerAnimation,
+  usePageTransition
+} from '@/components/SmoothScroll';
 
 type ExtendedViewMode = ViewMode | 'rewards' | 'punishments';
 
 export default function Home() {
   const [mounted, setMounted] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [viewMode, setViewMode] = useState<ExtendedViewMode>('daily');
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [habits, setHabits] = useState<Record<string, boolean>>({});
@@ -57,6 +68,15 @@ export default function Home() {
     isOpen: boolean;
     punishment: Punishment | null;
   }>({ isOpen: false, punishment: null });
+
+  const [isRemindersOpen, setIsRemindersOpen] = useState(false);
+  const { showOnboarding, completeOnboarding, isLoaded: onboardingLoaded } = useOnboarding();
+
+  // GSAP Animations
+  usePageTransition();
+  useScrollAnimation('.glass-card', { y: 30, duration: 0.8 });
+  useScrollAnimation('.stats-card', { y: 20, duration: 0.6 });
+  useStaggerAnimation('.habit-list', '.habit-card');
 
   useEffect(() => {
     setMounted(true);
@@ -245,209 +265,218 @@ export default function Home() {
     { id: 'punishments', label: 'Punishments', icon: AlertTriangle },
   ];
 
-  if (!mounted) {
+
+  if (!mounted || isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="spinner" />
-      </div>
+      <LoadingScreen
+        minDuration={1500}
+        onComplete={() => setIsLoading(false)}
+      />
     );
   }
 
   return (
-    <ThemeProvider>
-      <main className="min-h-screen pb-24 transition-colors duration-300">
-        {/* Header */}
-        <header className="sticky top-0 z-40 backdrop-blur-xl bg-white/80 dark:bg-slate-900/80 border-b border-slate-200/60 dark:border-slate-800 shadow-sm transition-colors duration-300">
-          <div className="container-app">
-            <div className="flex items-center justify-between h-16 lg:h-20">
-              {/* Logo */}
-              <div className="flex items-center gap-3">
-                <div className={`
+    <ToastProvider>
+      <ThemeProvider>
+        <SmoothScrollProvider>
+          <main className="min-h-screen pb-24 transition-colors duration-300">
+            {/* Header */}
+            <header className="sticky top-0 z-40 backdrop-blur-xl bg-white/80 border-b border-slate-200/60 shadow-sm transition-colors duration-300">
+              <div className="container-app">
+                <div className="flex items-center justify-between h-16 lg:h-20">
+                  {/* Logo */}
+                  <div className="flex items-center gap-3">
+                    <div className={`
                 p-2.5 rounded-xl bg-gradient-to-br from-orange-500 to-red-600
                 ${stats.currentStreak >= 7 ? 'beast-mode' : ''}
               `}>
-                  <Flame className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-xl lg:text-2xl font-bold text-gradient-beast">KALYAN</h1>
-                  <p className="text-xs text-slate-500 hidden sm:block">Beast Mode Activated</p>
-                </div>
-              </div>
+                      <Flame className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h1 className="text-xl lg:text-2xl font-bold text-gradient-beast">KALYAN</h1>
+                      <p className="text-xs text-slate-500 hidden sm:block">Beast Mode Activated</p>
+                    </div>
+                  </div>
 
-              {/* Desktop Navigation */}
-              <nav className="hidden lg:flex items-center gap-3">
-                {navigationItems.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => setViewMode(item.id as ExtendedViewMode)}
-                    className={`
+                  {/* Desktop Navigation */}
+                  <nav className="hidden lg:flex items-center gap-3">
+                    {navigationItems.map((item) => (
+                      <button
+                        key={item.id}
+                        onClick={() => setViewMode(item.id as ExtendedViewMode)}
+                        className={`
                     flex items-center gap-2.5 px-5 py-2.5 rounded-xl
                     transition-all duration-200 text-sm font-medium
                     ${viewMode === item.id
-                        ? 'tab-active'
-                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800'
-                      }
+                            ? 'tab-active'
+                            : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
+                          }
                   `}
-                  >
-                    <item.icon className="w-4 h-4" />
-                    <span>{item.label}</span>
-                  </button>
-                ))}
-              </nav>
+                      >
+                        <item.icon className="w-4 h-4" />
+                        <span>{item.label}</span>
+                      </button>
+                    ))}
+                  </nav>
 
-              <div className="flex items-center gap-2 sm:gap-3">
-                {/* Streak Badge */}
-                <div className="hidden md:flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm text-slate-900 dark:text-white transition-colors">
-                  <Flame className="w-5 h-5 text-orange-500" />
-                  <span className="text-base font-bold">{stats.currentStreak}</span>
-                  <span className="text-sm text-slate-500 dark:text-slate-400">day streak</span>
-                </div>
-
-                <ThemeToggle />
-
-                {/* User Profile Dropdown */}
-                <UserProfileDropdown />
-
-                {/* Mobile Menu Button */}
-                <button
-                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                  className="lg:hidden p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-                >
-                  {mobileMenuOpen ? (
-                    <X className="w-5 h-5" />
-                  ) : (
-                    <Menu className="w-5 h-5" />
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Mobile Navigation */}
-          <AnimatePresence>
-            {mobileMenuOpen && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="lg:hidden border-t border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl shadow-lg"
-              >
-                <div className="container-app py-4 space-y-2">
-                  {navigationItems.map(item => (
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    {/* Add Habit Button - Mobile Visible */}
                     <button
-                      key={item.id}
-                      onClick={() => {
-                        setViewMode(item.id as ExtendedViewMode);
-                        setMobileMenuOpen(false);
-                      }}
-                      className={`
+                      onClick={() => setIsAddHabitOpen(true)}
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors font-medium text-sm"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span className="hidden sm:inline">Add Habit</span>
+                      <span className="sm:hidden">Add</span>
+                    </button>
+
+                    {/* Streak Badge */}
+                    <div className="hidden md:flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 shadow-sm text-slate-900 transition-colors">
+                      <Flame className="w-5 h-5 text-orange-500" />
+                      <span className="text-base font-bold">{stats.currentStreak}</span>
+                      <span className="text-sm text-slate-500">day streak</span>
+                    </div>
+
+                    {/* Reminders Bell */}
+                    <ReminderBellButton onClick={() => setIsRemindersOpen(true)} />
+
+                    {/* User Profile Dropdown */}
+                    <UserProfileDropdown />
+
+                    {/* Mobile Menu Button */}
+                    <button
+                      onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                      className="lg:hidden p-2.5 rounded-xl bg-slate-100 text-slate-900 hover:bg-slate-200 transition-colors"
+                    >
+                      {mobileMenuOpen ? (
+                        <X className="w-5 h-5" />
+                      ) : (
+                        <Menu className="w-5 h-5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Mobile Navigation */}
+              <AnimatePresence>
+                {mobileMenuOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="lg:hidden border-t border-slate-200 bg-white/95 backdrop-blur-xl shadow-lg"
+                  >
+                    <div className="container-app py-4 space-y-2">
+                      {navigationItems.map(item => (
+                        <button
+                          key={item.id}
+                          onClick={() => {
+                            setViewMode(item.id as ExtendedViewMode);
+                            setMobileMenuOpen(false);
+                          }}
+                          className={`
                       flex items-center gap-3 w-full px-4 py-3 rounded-xl
                       transition-all duration-200
                       ${viewMode === item.id
-                          ? 'tab-active'
-                          : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800'
-                        }
+                              ? 'tab-active'
+                              : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
+                            }
                     `}
-                    >
-                      <item.icon className="w-5 h-5" />
-                      <span className="font-medium">{item.label}</span>
-                    </button>
-                  ))}
+                        >
+                          <item.icon className="w-5 h-5" />
+                          <span className="font-medium">{item.label}</span>
+                        </button>
+                      ))}
 
-                  <div className="flex items-center justify-center gap-2 py-3 mt-2 border-t border-slate-200 dark:border-slate-800">
-                    <Flame className="w-4 h-4 text-orange-500" />
-                    <span className="font-bold text-slate-900 dark:text-white">{stats.currentStreak} day streak</span>
+                      <div className="flex items-center justify-center gap-2 py-3 mt-2 border-t border-slate-200">
+                        <Flame className="w-4 h-4 text-orange-500" />
+                        <span className="font-bold text-slate-900">{stats.currentStreak} day streak</span>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </header>
+
+            {/* Main Content */}
+            <div className="container-app py-16 pb-32">
+              {/* Stats Overview - Layer 1 */}
+              <section className="mb-32 py-8 lg:py-12">
+                <StatsCard stats={stats} />
+              </section>
+
+              {/* Daily View */}
+              {viewMode === 'daily' && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  {/* Calendar & Progress - Layer 2 */}
+                  <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-40">
+                    <div className="xl:col-span-2">
+                      <CalendarView
+                        progress={allProgress}
+                        selectedDate={selectedDate}
+                        onSelectDate={setSelectedDate}
+                      />
+                    </div>
+
+                    <div className="glass-card p-8 flex flex-col items-center justify-center">
+                      <h3 className="text-base font-medium text-slate-500 mb-6">
+                        {isToday(selectedDate) ? "Today's Progress" : format(selectedDate, 'MMM d, yyyy')}
+                      </h3>
+                      <ProgressRing progress={dailyScore} size={160} strokeWidth={12} />
+                      <p className="text-slate-500 text-base mt-6">
+                        {Object.values(habits).filter(Boolean).length} of {allHabits.length} habits completed
+                      </p>
+                      {dailyScore === 100 && (
+                        <div className="flex items-center gap-2 mt-4 text-emerald-600 font-bold text-lg">
+                          <Crown className="w-6 h-6" />
+                          PERFECT DAY!
+                        </div>
+                      )}
+
+                      {/* Inline Add Button */}
+                      <button
+                        onClick={() => setIsAddHabitOpen(true)}
+                        className="mt-6 flex items-center gap-2 text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors px-4 py-2 rounded-full bg-indigo-50 hover:bg-indigo-100"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Add New Habit
+                      </button>
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </header>
 
-        {/* Main Content */}
-        <div className="container-app py-16 pb-32">
-          {/* Stats Overview - Layer 1 */}
-          <section className="mb-32 py-8 lg:py-12">
-            <StatsCard stats={stats} />
-          </section>
-
-          {/* Daily View */}
-          {viewMode === 'daily' && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              {/* Calendar & Progress - Layer 2 */}
-              <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-40">
-                <div className="xl:col-span-2">
-                  <CalendarView
-                    progress={allProgress}
-                    selectedDate={selectedDate}
-                    onSelectDate={setSelectedDate}
-                  />
-                </div>
-
-                <div className="glass-card p-8 flex flex-col items-center justify-center">
-                  <h3 className="text-base font-medium text-slate-500 mb-6">
-                    {isToday(selectedDate) ? "Today's Progress" : format(selectedDate, 'MMM d, yyyy')}
-                  </h3>
-                  <ProgressRing progress={dailyScore} size={160} strokeWidth={12} />
-                  <p className="text-slate-500 text-base mt-6">
-                    {Object.values(habits).filter(Boolean).length} of {allHabits.length} habits completed
-                  </p>
-                  {dailyScore === 100 && (
-                    <div className="flex items-center gap-2 mt-4 text-emerald-600 font-bold text-lg">
-                      <Crown className="w-6 h-6" />
-                      PERFECT DAY!
+                  {/* Habits List - Layer 3 */}
+                  <div>
+                    <div className="flex items-center justify-between mb-8">
+                      <h2 className="text-xl lg:text-2xl font-bold text-slate-900 flex items-center gap-2 ">
+                        <Zap className="w-10 h-10 text-yellow-500" />
+                        Daily Habits
+                      </h2>
                     </div>
-                  )}
-                </div>
-              </div>
 
-              {/* Habits List - Layer 3 */}
-              <div>
-                <div className="flex items-center justify-between mb-8">
-                  <h2 className="text-xl lg:text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2 ">
-                    <Zap className="w-10 h-10 text-yellow-500" />
-                    Daily Habits
-                  </h2>
-                  {allHabits.length > 0 && (
-                    <button
-                      onClick={() => setIsAddHabitOpen(true)}
-                      className="
-                        flex items-center gap-2 px-6 py-3 rounded-xl
-                        bg-gradient-to-r from-indigo-600 to-violet-600
-                        hover:from-indigo-500 hover:to-violet-500
-                        text-white font-semibold text-base
-                        shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40
-                        transition-all duration-300 hover:-translate-y-1 hover:scale-105
-                      "
-                    >
-                      <Plus className="w-5 h-5" strokeWidth={2.5} />
-                      Add New Habit
-                    </button>
-                  )}
-                </div>
 
-                {/* Empty State - Show when no habits */}
-                {allHabits.length === 0 && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="flex flex-col items-center justify-center py-16 px-8 rounded-3xl bg-gradient-to-br from-slate-50 to-slate-100 gap-5 dark:from-slate-800/50 dark:to-slate-900/50 border-2 border-dashed border-slate-300 dark:border-slate-700"
-                  >
-                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center mb-6 shadow-lg shadow-indigo-500/30">
-                      <Plus className="w-10 h-10 text-white" strokeWidth={2} />
-                    </div>
-                    <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-3">
-                      Start Your Journey!
-                    </h3>
-                    <p className="text-slate-500 dark:text-slate-400 text-center max-w-md mb-8 text-lg">
-                      Create your first habit to begin tracking your daily progress and building powerful routines.
-                    </p>
-                    <button
-                      onClick={() => setIsAddHabitOpen(true)}
-                      className="
+                    {/* Empty State - Show when no habits */}
+                    {allHabits.length === 0 && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="flex flex-col items-center justify-center py-16 px-8 rounded-3xl bg-gradient-to-br from-slate-50 to-slate-100 gap-5 border-2 border-dashed border-slate-300"
+                      >
+                        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center mb-6 shadow-lg shadow-indigo-500/30">
+                          <Plus className="w-10 h-10 text-white" strokeWidth={2} />
+                        </div>
+                        <h3 className="text-2xl font-bold text-slate-800 mb-3">
+                          Start Your Journey!
+                        </h3>
+                        <p className="text-slate-500 text-center max-w-md mb-8 text-lg">
+                          Create your first habit to begin tracking your daily progress and building powerful routines.
+                        </p>
+                        <button
+                          onClick={() => setIsAddHabitOpen(true)}
+                          className="
                         flex items-center gap-3 px-10 py-4 rounded-2xl
                         bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600
                         hover:from-indigo-500 hover:via-violet-500 hover:to-purple-500
@@ -456,231 +485,252 @@ export default function Home() {
                         transition-all duration-300 hover:-translate-y-2 hover:scale-105
                         animate-pulse hover:animate-none
                       "
-                    >
-                      <Plus className="w-6 h-6" strokeWidth={2.5} />
-                      Create Your First Habit
-                    </button>
-                    <p className="text-sm  text-slate-400 dark:text-slate-500 mt-6">
-                      Build the life you want, one habit at a time
-                    </p>
-                  </motion.div>
-                )}
+                        >
+                          <Plus className="w-6 h-6" strokeWidth={2.5} />
+                          Create Your First Habit
+                        </button>
+                        <p className="text-sm text-slate-400 mt-6">
+                          Build the life you want, one habit at a time
+                        </p>
+                      </motion.div>
+                    )}
 
-                {/* Habits Grid - Show when habits exist */}
-                {allHabits.length > 0 && (
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                    {allHabits.map((habit) => (
-                      <HabitCard
-                        key={habit.id}
-                        habit={habit}
-                        isCompleted={habits[habit.id] || false}
-                        onToggle={toggleHabit}
-                        onDelete={handleDeleteHabit}
-                        disabled={isFuture(selectedDate) && !isToday(selectedDate)}
-                      />
-                    ))}
+                    {/* Habits Grid - Show when habits exist */}
+                    {allHabits.length > 0 && (
+                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                        {allHabits.map((habit) => (
+                          <HabitCard
+                            key={habit.id}
+                            habit={habit}
+                            isCompleted={habits[habit.id] || false}
+                            onToggle={toggleHabit}
+                            onDelete={handleDeleteHabit}
+                            disabled={isFuture(selectedDate) && !isToday(selectedDate)}
+                          />
+                        ))}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            </motion.div>
-          )}
+                </motion.div>
+              )}
 
-          {/* Weekly View */}
-          {viewMode === 'weekly' && weeklyStats && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="space-y-16"
-            >
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6" style={{ marginBottom: '2rem' }}>
-                <div className="glass-card p-6 lg:p-8 text-center">
-                  <p className="text-slate-500 text-sm mb-3">Week Average</p>
-                  <p className="text-3xl lg:text-4xl font-bold text-gradient-purple">{weeklyStats.averageScore}%</p>
-                </div>
-                <div className="glass-card p-6 lg:p-8 text-center">
-                  <p className="text-slate-500 text-sm mb-3">Habits Done</p>
-                  <p className="text-3xl lg:text-4xl font-bold text-gradient-green">{weeklyStats.completedHabits}</p>
-                </div>
-                <div className="glass-card p-6 lg:p-8 text-center">
-                  <p className="text-slate-500 text-sm mb-3">Perfect Days</p>
-                  <p className="text-3xl lg:text-4xl font-bold text-gradient-orange">{weeklyStats.perfectDays}</p>
-                </div>
-                <div className="glass-card p-6 lg:p-8 text-center">
-                  <p className="text-slate-500 text-sm mb-3">Days Tracked</p>
-                  <p className="text-3xl lg:text-4xl font-bold text-slate-900">{weeklyStats.daysWithData}/7</p>
-                </div>
-              </div>
+              {/* Weekly View */}
+              {viewMode === 'weekly' && weeklyStats && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="space-y-16"
+                >
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-6" style={{ marginBottom: '2rem' }}>
+                    <div className="glass-card p-6 lg:p-8 text-center">
+                      <p className="text-slate-500 text-sm mb-3">Week Average</p>
+                      <p className="text-3xl lg:text-4xl font-bold text-gradient-purple">{weeklyStats.averageScore}%</p>
+                    </div>
+                    <div className="glass-card p-6 lg:p-8 text-center">
+                      <p className="text-slate-500 text-sm mb-3">Habits Done</p>
+                      <p className="text-3xl lg:text-4xl font-bold text-gradient-green">{weeklyStats.completedHabits}</p>
+                    </div>
+                    <div className="glass-card p-6 lg:p-8 text-center">
+                      <p className="text-slate-500 text-sm mb-3">Perfect Days</p>
+                      <p className="text-3xl lg:text-4xl font-bold text-gradient-orange">{weeklyStats.perfectDays}</p>
+                    </div>
+                    <div className="glass-card p-6 lg:p-8 text-center">
+                      <p className="text-slate-500 text-sm mb-3">Days Tracked</p>
+                      <p className="text-3xl lg:text-4xl font-bold text-gradient-blue">{weeklyStats.daysWithData}/7</p>
+                    </div>
+                  </div>
 
-              <WeeklyChart progress={allProgress} />
-              <div style={{ marginTop: '2rem' }}>
-                <HabitsPieChart progress={allProgress} />
-              </div>
-            </motion.div>
-          )}
+                  <WeeklyChart progress={allProgress} />
+                  <div style={{ marginTop: '2rem' }}>
+                    <HabitsPieChart progress={allProgress} habits={allHabits} />
+                  </div>
+                </motion.div>
+              )}
 
-          {/* Monthly View */}
-          {viewMode === 'monthly' && monthlyStats && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="space-y-16"
-            >
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6" style={{ marginBottom: '2rem' }}>
-                <div className="glass-card p-6 lg:p-8 text-center">
-                  <p className="text-slate-500 text-sm mb-3">Month Average</p>
-                  <p className="text-3xl lg:text-4xl font-bold text-gradient-purple">{monthlyStats.averageScore}%</p>
-                </div>
-                <div className="glass-card p-6 lg:p-8 text-center">
-                  <p className="text-slate-500 text-sm mb-3">Days Tracked</p>
-                  <p className="text-3xl lg:text-4xl font-bold text-gradient-green">{monthlyStats.totalDays}</p>
-                </div>
-                <div className="glass-card p-6 lg:p-8 text-center">
-                  <p className="text-slate-500 text-sm mb-3">Perfect Days</p>
-                  <p className="text-3xl lg:text-4xl font-bold text-gradient-orange">{monthlyStats.perfectDays}</p>
-                </div>
-                <div className="glass-card p-6 lg:p-8 text-center">
-                  <p className="text-slate-500 text-sm mb-3">Completion</p>
-                  <p className="text-3xl lg:text-4xl font-bold text-slate-900">
-                    {monthlyStats.totalDays > 0
-                      ? Math.round((monthlyStats.totalDays / monthlyStats.daysInMonth) * 100)
-                      : 0}%
-                  </p>
-                </div>
-              </div>
+              {/* Monthly View */}
+              {viewMode === 'monthly' && monthlyStats && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="space-y-16"
+                >
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-6" style={{ marginBottom: '2rem' }}>
+                    <div className="glass-card p-6 lg:p-8 text-center">
+                      <p className="text-slate-500 text-sm mb-3">Month Average</p>
+                      <p className="text-3xl lg:text-4xl font-bold text-gradient-purple">{monthlyStats.averageScore}%</p>
+                    </div>
+                    <div className="glass-card p-6 lg:p-8 text-center">
+                      <p className="text-slate-500 text-sm mb-3">Days Tracked</p>
+                      <p className="text-3xl lg:text-4xl font-bold text-gradient-green">{monthlyStats.totalDays}</p>
+                    </div>
+                    <div className="glass-card p-6 lg:p-8 text-center">
+                      <p className="text-slate-500 text-sm mb-3">Perfect Days</p>
+                      <p className="text-3xl lg:text-4xl font-bold text-gradient-orange">{monthlyStats.perfectDays}</p>
+                    </div>
+                    <div className="glass-card p-6 lg:p-8 text-center">
+                      <p className="text-slate-500 text-sm mb-3">Completion</p>
+                      <p className="text-3xl lg:text-4xl font-bold text-gradient-blue">
+                        {monthlyStats.totalDays > 0
+                          ? Math.round((monthlyStats.totalDays / monthlyStats.daysInMonth) * 100)
+                          : 0}%
+                      </p>
+                    </div>
+                  </div>
 
-              <MonthlyChart progress={allProgress} />
+                  <MonthlyChart progress={allProgress} />
 
-              <div className="glass-card p-6 lg:p-8" style={{ marginTop: '2rem' }}>
-                <h3 className="text-lg lg:text-xl font-semibold text-slate-900 mb-8">Habit Completion This Month</h3>
-                <div className="space-y-6">
-                  {allHabits.map(habit => {
-                    const completed = monthlyStats.habitsCompletion[habit.id] || 0;
-                    const percentage = monthlyStats.totalDays > 0
-                      ? Math.round((completed / monthlyStats.totalDays) * 100)
-                      : 0;
+                  <div className="glass-card p-6 lg:p-8" style={{ marginTop: '2rem' }}>
+                    <h3 className="text-lg lg:text-xl font-semibold text-slate-900 mb-8">Habit Completion This Month</h3>
+                    <div className="space-y-6">
+                      {allHabits.map(habit => {
+                        const completed = monthlyStats.habitsCompletion[habit.id] || 0;
+                        const percentage = monthlyStats.totalDays > 0
+                          ? Math.round((completed / monthlyStats.totalDays) * 100)
+                          : 0;
 
-                    return (
-                      <ProgressBar
-                        key={habit.id}
-                        progress={percentage}
-                        label={habit.name}
-                        color={percentage >= 80 ? 'from-emerald-500 to-green-500' :
-                          percentage >= 50 ? 'from-yellow-500 to-amber-500' :
-                            'from-red-500 to-rose-500'}
-                      />
-                    );
-                  })}
-                </div>
-              </div>
-            </motion.div>
-          )}
+                        return (
+                          <ProgressBar
+                            key={habit.id}
+                            progress={percentage}
+                            label={habit.name}
+                            color={percentage >= 80 ? 'from-emerald-500 to-green-500' :
+                              percentage >= 50 ? 'from-yellow-500 to-amber-500' :
+                                'from-red-500 to-rose-500'}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
 
-          {/* Yearly View */}
-          {viewMode === 'yearly' && yearlyStats && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="space-y-16"
-            >
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6" style={{ marginBottom: '2rem' }}>
-                <div className="glass-card p-6 lg:p-8 text-center">
-                  <p className="text-slate-500 dark:text-slate-400 text-sm mb-3">Year Average</p>
-                  <p className="text-3xl lg:text-4xl font-bold text-gradient-purple">{yearlyStats.averageScore}%</p>
-                </div>
-                <div className="glass-card p-6 lg:p-8 text-center">
-                  <p className="text-slate-500 dark:text-slate-400 text-sm mb-3">Days Tracked</p>
-                  <p className="text-3xl lg:text-4xl font-bold text-gradient-green">{yearlyStats.totalDays}</p>
-                </div>
-                <div className="glass-card p-6 lg:p-8 text-center">
-                  <p className="text-slate-500 dark:text-slate-400 text-sm mb-3">Perfect Days</p>
-                  <p className="text-3xl lg:text-4xl font-bold text-gradient-orange">{yearlyStats.perfectDays}</p>
-                </div>
-                <div className="glass-card p-6 lg:p-8 text-center">
-                  <p className="text-slate-500 dark:text-slate-400 text-sm mb-3">Rewards</p>
-                  <p className="text-3xl lg:text-4xl font-bold text-slate-900 dark:text-white">{yearlyStats.rewardsEarned}</p>
-                </div>
-              </div>
+              {/* Yearly View */}
+              {viewMode === 'yearly' && yearlyStats && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="space-y-16"
+                >
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-6" style={{ marginBottom: '2rem' }}>
+                    <div className="glass-card p-6 lg:p-8 text-center">
+                      <p className="text-slate-500 text-sm mb-3">Year Average</p>
+                      <p className="text-3xl lg:text-4xl font-bold text-gradient-purple">{yearlyStats.averageScore}%</p>
+                    </div>
+                    <div className="glass-card p-6 lg:p-8 text-center">
+                      <p className="text-slate-500 text-sm mb-3">Days Tracked</p>
+                      <p className="text-3xl lg:text-4xl font-bold text-gradient-green">{yearlyStats.totalDays}</p>
+                    </div>
+                    <div className="glass-card p-6 lg:p-8 text-center">
+                      <p className="text-slate-500 text-sm mb-3">Perfect Days</p>
+                      <p className="text-3xl lg:text-4xl font-bold text-gradient-orange">{yearlyStats.perfectDays}</p>
+                    </div>
+                    <div className="glass-card p-6 lg:p-8 text-center">
+                      <p className="text-slate-500 text-sm mb-3">Rewards</p>
+                      <p className="text-3xl lg:text-4xl font-bold text-gradient-pink">{yearlyStats.rewardsEarned}</p>
+                    </div>
+                  </div>
 
-              <YearlyChart monthlyScores={yearlyStats.monthlyScores} year={yearlyStats.year} />
-            </motion.div>
-          )}
+                  <YearlyChart monthlyScores={yearlyStats.monthlyScores} year={yearlyStats.year} />
 
-          {/* Rewards View */}
-          {viewMode === 'rewards' && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <div className="mb-12 text-center">
-                <h2 className="text-2xl lg:text-3xl font-bold text-slate-900 dark:text-white mb-3">🏆 Achievements</h2>
-                <p className="text-slate-500 dark:text-slate-400 text-base lg:text-lg">
-                  {rewards.filter(r => r.unlocked).length} of {rewards.length} unlocked
-                </p>
-              </div>
-              <RewardsGrid rewards={rewards} />
-            </motion.div>
-          )}
+                  {/* GitHub-style Yearly Heatmap */}
+                  <div style={{ marginTop: '2rem' }}>
+                    <YearlyHeatmap progress={allProgress} year={yearlyStats.year} />
+                  </div>
+                </motion.div>
+              )}
 
-          {/* Punishments View */}
-          {viewMode === 'punishments' && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <div className="mb-12">
-                <h2 className="text-2xl lg:text-3xl font-bold text-slate-900 dark:text-white mb-3">⚠️ Accountability Log</h2>
-                <p className="text-slate-500 dark:text-slate-400 text-base lg:text-lg">Learn from your mistakes</p>
-              </div>
-              <div className="glass-card p-6 lg:p-8">
-                <PunishmentList punishments={punishments} onComplete={handleCompletePunishment} />
-              </div>
-            </motion.div>
-          )}
-        </div>
+              {/* Rewards View */}
+              {viewMode === 'rewards' && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <div className="mb-12 text-center">
+                    <h2 className="text-2xl lg:text-3xl font-bold text-slate-900 mb-3">🏆 Achievements</h2>
+                    <p className="text-slate-500 text-base lg:text-lg">
+                      {rewards.filter(r => r.unlocked).length} of {rewards.length} unlocked
+                    </p>
+                  </div>
+                  <RewardsGrid rewards={rewards} />
+                </motion.div>
+              )}
 
-        {/* Modals */}
-        <CelebrationModal
-          isOpen={celebrationModal.isOpen}
-          onClose={() => setCelebrationModal(prev => ({ ...prev, isOpen: false }))}
-          type={celebrationModal.type}
-          title={celebrationModal.title}
-          message={celebrationModal.message}
-          icon={celebrationModal.icon}
-        />
+              {/* Punishments View */}
+              {viewMode === 'punishments' && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <div className="mb-12">
+                    <h2 className="text-2xl lg:text-3xl font-bold text-slate-900 mb-3">⚠️ Accountability Log</h2>
+                    <p className="text-slate-500 text-base lg:text-lg">Learn from your mistakes</p>
+                  </div>
+                  <div className="glass-card p-6 lg:p-8">
+                    <PunishmentList punishments={punishments} onComplete={handleCompletePunishment} />
+                  </div>
+                </motion.div>
+              )}
+            </div>
 
-        <PunishmentModal
-          isOpen={punishmentModal.isOpen}
-          punishment={punishmentModal.punishment}
-          onClose={() => setPunishmentModal({ isOpen: false, punishment: null })}
-        />
+            {/* Modals */}
+            <CelebrationModal
+              isOpen={celebrationModal.isOpen}
+              onClose={() => setCelebrationModal(prev => ({ ...prev, isOpen: false }))}
+              type={celebrationModal.type}
+              title={celebrationModal.title}
+              message={celebrationModal.message}
+              icon={celebrationModal.icon}
+            />
 
-        <AddHabitModal
-          isOpen={isAddHabitOpen}
-          onClose={() => setIsAddHabitOpen(false)}
-          onAdd={handleAddHabit}
-        />
+            <PunishmentModal
+              isOpen={punishmentModal.isOpen}
+              punishment={punishmentModal.punishment}
+              onClose={() => setPunishmentModal({ isOpen: false, punishment: null })}
+            />
 
-        {/* Floating Streak Badge */}
-        {stats.currentStreak >= 7 && (
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="fixed bottom-6 right-6 z-30"
-          >
-            <div className={`
+            <AddHabitModal
+              isOpen={isAddHabitOpen}
+              onClose={() => setIsAddHabitOpen(false)}
+              onAdd={handleAddHabit}
+            />
+
+            {/* Floating Streak Badge */}
+            {stats.currentStreak >= 7 && (
+              <motion.div
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="fixed bottom-6 right-6 z-30"
+              >
+                <div className={`
             flex items-center gap-2 px-5 py-3 rounded-full
             bg-gradient-to-r from-orange-500 to-red-600
             shadow-lg
             ${stats.currentStreak >= 30 ? 'beast-mode' : ''}
           `}>
-              <Flame className="w-5 h-5 text-white" />
-              <span className="font-bold text-white">
-                {stats.currentStreak >= 30 ? 'BEAST MODE!' : `${stats.currentStreak} Days!`}
-              </span>
-            </div>
-          </motion.div>
-        )}
-      </main>
-    </ThemeProvider>
+                  <Flame className="w-5 h-5 text-white" />
+                  <span className="font-bold text-white">
+                    {stats.currentStreak >= 30 ? 'BEAST MODE!' : `${stats.currentStreak} Days!`}
+                  </span>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Reminders Modal */}
+            <AnimatePresence>
+              {isRemindersOpen && (
+                <HabitRemindersModal onClose={() => setIsRemindersOpen(false)} />
+              )}
+            </AnimatePresence>
+
+            {/* Onboarding Flow */}
+            <AnimatePresence>
+              {onboardingLoaded && showOnboarding && (
+                <Onboarding onComplete={completeOnboarding} />
+              )}
+            </AnimatePresence>
+          </main>
+        </SmoothScrollProvider>
+      </ThemeProvider >
+    </ToastProvider >
   );
 }

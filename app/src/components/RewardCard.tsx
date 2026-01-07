@@ -38,7 +38,7 @@ export function RewardCard({ reward }: RewardCardProps) {
                 relative h-full rounded-[20px] p-6 flex flex-col items-center text-center overflow-hidden
                 ${reward.unlocked
                     ? `bg-gradient-to-b ${tierStyle.bg}`
-                    : 'bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-inner'
+                    : 'bg-white border border-slate-100 shadow-inner'
                 }
             `}>
                 {/* Background Effects */}
@@ -94,7 +94,7 @@ export function RewardCard({ reward }: RewardCardProps) {
                         border backdrop-blur-md
                         ${reward.unlocked
                             ? 'bg-white/20 border-white/30 text-white'
-                            : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400'
+                            : 'bg-slate-100 border-slate-200 text-slate-500'
                         }
                     `}>
                         {reward.tier}
@@ -102,14 +102,14 @@ export function RewardCard({ reward }: RewardCardProps) {
 
                     <h3 className={`
                         font-bold text-xl mb-2 leading-tight
-                        ${reward.unlocked ? 'text-white' : 'text-slate-900 dark:text-white'}
+                        ${reward.unlocked ? 'text-white' : 'text-slate-900'}
                     `}>
                         {reward.name}
                     </h3>
 
                     <p className={`
                         text-sm mb-6 line-clamp-2
-                        ${reward.unlocked ? 'text-white/80' : 'text-slate-500 dark:text-slate-400'}
+                        ${reward.unlocked ? 'text-white/80' : 'text-slate-500'}
                     `}>
                         {reward.description}
                     </p>
@@ -120,7 +120,7 @@ export function RewardCard({ reward }: RewardCardProps) {
                         backdrop-blur-md border transition-colors
                         ${reward.unlocked
                             ? 'bg-white/20 border-white/30 hover:bg-white/30'
-                            : 'bg-slate-50 dark:bg-slate-800 border-slate-100 dark:border-slate-700'
+                            : 'bg-slate-50 border-slate-100'
                         }
                     `}>
                         {reward.unlocked ? (
@@ -169,7 +169,7 @@ export function RewardsGrid({ rewards }: RewardsGridProps) {
                         transition={{ duration: 0.6, delay: tierIndex * 0.1 }}
                     >
                         {/* Section Header */}
-                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 border-b border-slate-200 dark:border-slate-800 pb-8">
+                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 border-b border-slate-200 pb-8">
                             <div className="flex items-center gap-5">
                                 {/* Tier Icon/Image Preview */}
                                 <div className="relative w-16 h-16">
@@ -181,8 +181,8 @@ export function RewardsGrid({ rewards }: RewardsGridProps) {
                                     />
                                 </div>
                                 <div>
-                                    <h3 className="text-3xl font-bold text-slate-900 dark:text-white capitalize tracking-tight">{tier} Collection</h3>
-                                    <p className="text-base text-slate-500 dark:text-slate-400 mt-1">
+                                    <h3 className="text-3xl font-bold text-slate-900 capitalize tracking-tight">{tier} Collection</h3>
+                                    <p className="text-base text-slate-500 mt-1">
                                         Unlock by maintaining your streak
                                     </p>
                                 </div>
@@ -191,10 +191,10 @@ export function RewardsGrid({ rewards }: RewardsGridProps) {
                             {/* Section Progress */}
                             <div className="flex flex-col items-end gap-3 min-w-[200px]">
                                 <div className="flex items-baseline gap-2">
-                                    <span className="text-2xl font-bold text-slate-900 dark:text-white">{unlockedCount}</span>
-                                    <span className="text-sm font-medium text-slate-500 dark:text-slate-400">/ {tierRewards.length} Unlocked</span>
+                                    <span className="text-2xl font-bold text-slate-900">{unlockedCount}</span>
+                                    <span className="text-sm font-medium text-slate-500">/ {tierRewards.length} Unlocked</span>
                                 </div>
-                                <div className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                                <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
                                     <motion.div
                                         className={`h-full bg-gradient-to-r ${TIER_COLORS[tier as keyof typeof TIER_COLORS].bg}`}
                                         initial={{ width: 0 }}

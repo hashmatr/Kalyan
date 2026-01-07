@@ -134,7 +134,7 @@ export default function Authentication({ onAuthSuccess }: AuthenticationProps) {
 
     if (!mounted) {
         return (
-            <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#0f172a' }}>
+            <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f8fafc' }}>
                 <div className="spinner-wheel" />
             </div>
         );
@@ -143,24 +143,24 @@ export default function Authentication({ onAuthSuccess }: AuthenticationProps) {
     return (
         <>
             <style jsx global>{`
-                /* Black Scrollbar */
+                /* Light Scrollbar */
                 ::-webkit-scrollbar {
                     width: 10px;
                     height: 10px;
                 }
                 ::-webkit-scrollbar-track {
-                    background: #1e293b;
+                    background: #f1f5f9;
                 }
                 ::-webkit-scrollbar-thumb {
-                    background: #0f172a;
+                    background: #cbd5e1;
                     border-radius: 5px;
                 }
                 ::-webkit-scrollbar-thumb:hover {
-                    background: #334155;
+                    background: #94a3b8;
                 }
                 * {
                     scrollbar-width: thin;
-                    scrollbar-color: #0f172a #1e293b;
+                    scrollbar-color: #cbd5e1 #f1f5f9;
                 }
                 
                 @keyframes spin {
@@ -169,8 +169,8 @@ export default function Authentication({ onAuthSuccess }: AuthenticationProps) {
                 .spinner-wheel {
                     width: 32px;
                     height: 32px;
-                    border: 2px solid rgba(255,255,255,0.3);
-                    border-top-color: white;
+                    border: 2px solid rgba(0,0,0,0.1);
+                    border-top-color: #6366f1;
                     border-radius: 50%;
                     animation: spin 1s linear infinite;
                 }
@@ -180,7 +180,7 @@ export default function Authentication({ onAuthSuccess }: AuthenticationProps) {
                 minHeight: '100vh',
                 display: 'flex',
                 flexDirection: 'row',
-                backgroundColor: '#0f172a'
+                backgroundColor: '#f8fafc'
             }}>
                 {/* Left Panel - Auth Form */}
                 <div style={{
@@ -479,19 +479,16 @@ export default function Authentication({ onAuthSuccess }: AuthenticationProps) {
                                 transition={{ duration: 0.5, delay: 0.3 }}
                                 style={{ marginTop: 24 }}
                             >
-                                <button
-                                    type="button"
+                                <a
+                                    href="/Pages/auth/forgot-password"
                                     style={{
-                                        background: 'none',
-                                        border: 'none',
                                         fontSize: 14,
                                         color: '#0f172a',
                                         textDecoration: 'underline',
-                                        cursor: 'pointer'
                                     }}
                                 >
                                     Forgot password?
-                                </button>
+                                </a>
                             </motion.div>
                         )}
 

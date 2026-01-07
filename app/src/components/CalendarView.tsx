@@ -38,11 +38,11 @@ export function CalendarView({ progress, selectedDate, onSelectDate }: CalendarV
     };
 
     const statusColors = {
-        none: 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700',
-        perfect: 'bg-emerald-100 dark:bg-emerald-900/30 border-emerald-300 dark:border-emerald-700',
-        good: 'bg-blue-100 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700',
-        partial: 'bg-yellow-100 dark:bg-yellow-900/30 border-yellow-300 dark:border-yellow-700',
-        poor: 'bg-red-100 dark:bg-red-900/30 border-red-300 dark:border-red-700',
+        none: 'bg-white border-slate-200',
+        perfect: 'bg-emerald-100 border-emerald-300',
+        good: 'bg-blue-100 border-blue-300',
+        partial: 'bg-yellow-100 border-yellow-300',
+        poor: 'bg-red-100 border-red-300',
     };
 
     return (
@@ -51,12 +51,12 @@ export function CalendarView({ progress, selectedDate, onSelectDate }: CalendarV
             <div className="flex items-center justify-between mb-4 sm:mb-6">
                 <button
                     onClick={() => navigateWeek('prev')}
-                    className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                    className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors"
                 >
-                    <ChevronLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                    <ChevronLeft className="w-5 h-5 text-slate-600" />
                 </button>
 
-                <h3 className="text-sm sm:text-base font-semibold text-slate-900 dark:text-white text-center">
+                <h3 className="text-sm sm:text-base font-semibold text-slate-900 text-center">
                     {format(currentWeekStart, 'MMM d')} - {format(endOfWeek(currentWeekStart, { weekStartsOn: 1 }), 'MMM d, yyyy')}
                 </h3>
 
@@ -64,7 +64,7 @@ export function CalendarView({ progress, selectedDate, onSelectDate }: CalendarV
                     onClick={() => navigateWeek('next')}
                     className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors"
                 >
-                    <ChevronRight className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                    <ChevronRight className="w-5 h-5 text-slate-600" />
                 </button>
             </div>
 
@@ -72,7 +72,7 @@ export function CalendarView({ progress, selectedDate, onSelectDate }: CalendarV
             <div className="grid grid-cols-7 gap-2">
                 {/* Day names */}
                 {dayNames.map(day => (
-                    <div key={day} className="text-center text-xs text-slate-500 dark:text-slate-400 pb-2">
+                    <div key={day} className="text-center text-xs text-slate-500 pb-2">
                         {day}
                     </div>
                 ))}
@@ -95,14 +95,14 @@ export function CalendarView({ progress, selectedDate, onSelectDate }: CalendarV
                 relative aspect-square rounded-lg border transition-all
                 flex flex-col items-center justify-center p-1
                 ${statusColors[status]}
-                ${isSelected ? 'ring-2 ring-purple-500 ring-offset-1 ring-offset-white dark:ring-offset-slate-900' : ''}
-                ${dateIsFuture ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer hover:border-slate-300 dark:hover:border-slate-600'}
+                ${isSelected ? 'ring-2 ring-purple-500 ring-offset-1 ring-offset-white' : ''}
+                ${dateIsFuture ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer hover:border-slate-300'}
                 ${isToday(date) && !isSelected ? 'ring-2 ring-orange-500' : ''}
               `}
                         >
                             <span className={`
                 text-sm sm:text-base font-bold
-                ${status === 'none' ? 'text-slate-400 dark:text-slate-500' : 'text-slate-900 dark:text-white'}
+                ${status === 'none' ? 'text-slate-400' : 'text-slate-900'}
               `}>
                                 {format(date, 'd')}
                             </span>
@@ -118,7 +118,7 @@ export function CalendarView({ progress, selectedDate, onSelectDate }: CalendarV
             </div>
 
             {/* Legend */}
-            <div className="mt-4 sm:mt-6 pt-4 border-t border-slate-200 dark:border-slate-800">
+            <div className="mt-4 sm:mt-6 pt-4 border-t border-slate-200">
                 <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
                     {[
                         { status: 'perfect', label: '100%', color: 'bg-emerald-500' },
@@ -128,7 +128,7 @@ export function CalendarView({ progress, selectedDate, onSelectDate }: CalendarV
                     ].map(({ status, label, color }) => (
                         <div key={status} className="flex items-center gap-1.5">
                             <div className={`w-2.5 h-2.5 rounded-full ${color}`} />
-                            <span className="text-xs text-slate-500 dark:text-slate-400">{label}</span>
+                            <span className="text-xs text-slate-500">{label}</span>
                         </div>
                     ))}
                 </div>
