@@ -139,7 +139,7 @@ body {
 
 /* Text gradients */
 .text-gradient-purple {
-  background: linear-gradient(135deg, #7e22ce, #4338ca);
+  background: linear-gradient(135deg, #0f172a, #475569);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -236,8 +236,8 @@ body {
   width: 100%;
   max-width: 1600px;
   margin: 0 auto;
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
 
 @media (min-width: 640px) {

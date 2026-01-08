@@ -73,7 +73,7 @@ interface ProgressBarProps {
     color?: string;
 }
 
-export function ProgressBar({ progress, label, color = 'from-purple-500 to-indigo-600' }: ProgressBarProps) {
+export function ProgressBar({ progress, label, color = 'from-slate-700 to-slate-900' }: ProgressBarProps) {
     return (
         <div>
             {label && (

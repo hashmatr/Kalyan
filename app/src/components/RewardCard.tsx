@@ -29,13 +29,13 @@ export function RewardCard({ reward }: RewardCardProps) {
             animate={{ opacity: 1, y: 0 }}
             whileHover={{ y: -8, transition: { duration: 0.2 } }}
             className={`
-                relative overflow-hidden rounded-3xl p-1 group
+                relative overflow-hidden rounded-[32px] p-1 group
                 bg-gradient-to-br ${reward.unlocked ? tierStyle.border : 'from-white/5 to-white/5'}
                 shadow-2xl
             `}
         >
             <div className={`
-                relative h-full rounded-[20px] p-6 flex flex-col items-center text-center overflow-hidden
+                relative h-full rounded-3xl p-6 flex flex-col items-center text-center overflow-hidden
                 ${reward.unlocked
                     ? `bg-gradient-to-b ${tierStyle.bg}`
                     : 'bg-white border border-slate-100 shadow-inner'
@@ -116,7 +116,7 @@ export function RewardCard({ reward }: RewardCardProps) {
 
                     {/* Footer Status */}
                     <div className={`
-                        w-full py-3 rounded-xl flex items-center justify-center gap-2
+                        w-full py-3 rounded-2xl flex items-center justify-center gap-2
                         backdrop-blur-md border transition-colors
                         ${reward.unlocked
                             ? 'bg-white/20 border-white/30 hover:bg-white/30'

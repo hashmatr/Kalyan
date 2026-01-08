@@ -148,7 +148,7 @@ export function YearlyHeatmap({ progress, year }: YearlyHeatmapProps) {
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm"
+            className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm"
         >
             <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 mb-6">
                 <div>

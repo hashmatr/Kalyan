@@ -39,7 +39,7 @@ export function PunishmentModal({ punishment, onClose, isOpen }: PunishmentModal
                         exit={{ scale: 0.8, opacity: 0 }}
                         onClick={e => e.stopPropagation()}
                         className={`
-              relative w-full max-w-md p-8 rounded-3xl
+              relative w-full max-w-md p-8 rounded-[32px]
               bg-gradient-to-br ${severityColors[punishment.severity]}
               shadow-2xl
             `}
@@ -147,7 +147,7 @@ export function PunishmentList({ punishments, onComplete }: PunishmentListProps)
                         animate={{ opacity: isCompleted ? 0.6 : 1, x: 0 }}
                         transition={{ delay: index * 0.1 }}
                         className={`
-                            p-4 rounded-xl border-2 transition-all duration-300
+                            p-4 rounded-2xl border-2 transition-all duration-300
                             ${isCompleted
                                 ? 'border-emerald-500/30 bg-emerald-500/5'
                                 : severityColors[punishment.severity]

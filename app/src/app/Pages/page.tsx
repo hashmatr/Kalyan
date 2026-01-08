@@ -20,6 +20,7 @@ import {
 import { loadFromDatabase, scheduleSyncWithDatabase, deleteHabitFromDB } from '@/lib/apiStorage';
 
 import { AddHabitModal } from '@/components/AddHabitModal';
+import { InstallPWA } from '@/components/InstallPWA';
 
 import { HabitCard } from '@/components/HabitCard';
 import { StatsCard } from '@/components/StatsCard';
@@ -323,11 +324,10 @@ export default function Home() {
                     {/* Add Habit Button - Mobile Visible */}
                     <button
                       onClick={() => setIsAddHabitOpen(true)}
-                      className="flex items-center gap-2 px-3 py-2 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors font-medium text-sm"
+                      className="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-100 text-slate-900 hover:bg-slate-200 transition-colors font-medium text-sm"
                     >
                       <Plus className="w-4 h-4" />
-                      <span className="hidden sm:inline">Add Habit</span>
-                      <span className="sm:hidden">Add</span>
+                      <span className="hidden md:inline">Add Habit</span>
                     </button>
 
                     {/* Streak Badge */}
@@ -393,6 +393,10 @@ export default function Home() {
                         <Flame className="w-4 h-4 text-orange-500" />
                         <span className="font-bold text-slate-900">{stats.currentStreak} day streak</span>
                       </div>
+
+                      <div className="border-t border-slate-200 pt-2">
+                        <InstallPWA />
+                      </div>
                     </div>
                   </motion.div>
                 )}
@@ -412,8 +416,7 @@ export default function Home() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                 >
-                  {/* Calendar & Progress - Layer 2 */}
-                  <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-40">
+                  <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-20 xl:mb-8">
                     <div className="xl:col-span-2">
                       <CalendarView
                         progress={allProgress}
@@ -440,7 +443,7 @@ export default function Home() {
                       {/* Inline Add Button */}
                       <button
                         onClick={() => setIsAddHabitOpen(true)}
-                        className="mt-6 flex items-center gap-2 text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors px-4 py-2 rounded-full bg-indigo-50 hover:bg-indigo-100"
+                        className="mt-6 flex items-center gap-2 text-sm font-medium text-slate-900 hover:text-slate-700 transition-colors px-4 py-2 rounded-full bg-slate-100 hover:bg-slate-200"
                       >
                         <Plus className="w-4 h-4" />
                         Add New Habit
@@ -448,8 +451,11 @@ export default function Home() {
                     </div>
                   </div>
 
+                  {/* Spacer to prevent overlap on mobile */}
+                  <div className="h-40 w-full block lg:hidden"></div>
+
                   {/* Habits List - Layer 3 */}
-                  <div>
+                  <div className="relative z-0 mt-0 lg:mt-12">
                     <div className="flex items-center justify-between mb-8">
                       <h2 className="text-xl lg:text-2xl font-bold text-slate-900 flex items-center gap-2 ">
                         <Zap className="w-10 h-10 text-yellow-500" />
@@ -465,7 +471,7 @@ export default function Home() {
                         animate={{ opacity: 1, y: 0 }}
                         className="flex flex-col items-center justify-center py-16 px-8 rounded-3xl bg-gradient-to-br from-slate-50 to-slate-100 gap-5 border-2 border-dashed border-slate-300"
                       >
-                        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center mb-6 shadow-lg shadow-indigo-500/30">
+                        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-slate-800 to-black flex items-center justify-center mb-6 shadow-lg shadow-slate-900/30">
                           <Plus className="w-10 h-10 text-white" strokeWidth={2} />
                         </div>
                         <h3 className="text-2xl font-bold text-slate-800 mb-3">
@@ -478,10 +484,10 @@ export default function Home() {
                           onClick={() => setIsAddHabitOpen(true)}
                           className="
                         flex items-center gap-3 px-10 py-4 rounded-2xl
-                        bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600
-                        hover:from-indigo-500 hover:via-violet-500 hover:to-purple-500
+                        bg-gradient-to-r from-slate-800 via-slate-900 to-black
+                        hover:from-slate-700 hover:via-slate-800 hover:to-slate-900
                         text-white font-bold text-lg
-                        shadow-2xl shadow-indigo-500/40 hover:shadow-indigo-500/60
+                        shadow-2xl shadow-slate-900/40 hover:shadow-slate-900/60
                         transition-all duration-300 hover:-translate-y-2 hover:scale-105
                         animate-pulse hover:animate-none
                       "

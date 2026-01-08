@@ -47,7 +47,7 @@ export function StatsCard({ stats }: StatsCardProps) {
             label: 'Days Tracked',
             value: stats.totalDaysTracked,
             suffix: '',
-            color: 'from-purple-500 to-indigo-600',
+            color: 'from-slate-700 to-zinc-900',
             textGradient: 'text-gradient-purple',
         },
         {
@@ -61,17 +61,17 @@ export function StatsCard({ stats }: StatsCardProps) {
     ];
 
     return (
-        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4 lg:gap-5" style={{ marginTop: '3rem', marginBottom: '3rem' }}>
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-4 lg:gap-5" style={{ marginTop: '3rem', marginBottom: '3rem' }}>
             {statItems.map((item, index) => (
                 <motion.div
                     key={item.label}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
-                    className="glass-card p-5 lg:p-6"
+                    className="glass-card rounded-3xl p-5 lg:p-6"
                 >
                     <div className={`
-            inline-flex p-2.5 lg:p-3 rounded-xl mb-4
+            inline-flex p-2.5 lg:p-3 rounded-2xl mb-4
             bg-gradient-to-br ${item.color}
           `}>
                         <item.icon className="w-5 h-5 lg:w-6 lg:h-6 text-white" />

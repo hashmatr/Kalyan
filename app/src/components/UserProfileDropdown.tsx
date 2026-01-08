@@ -138,17 +138,19 @@ export default function UserProfileDropdown({ onLogout }: UserProfileDropdownPro
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap'
-                }}>
+                }} className="hidden sm:block">
                     {user.name.split(' ')[0]}
                 </span>
-                <ChevronDown
-                    size={16}
-                    color="#64748b"
-                    style={{
-                        transition: 'transform 0.2s ease',
-                        transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)'
-                    }}
-                />
+                <div className="hidden sm:block">
+                    <ChevronDown
+                        size={16}
+                        color="#64748b"
+                        style={{
+                            transition: 'transform 0.2s ease',
+                            transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)'
+                        }}
+                    />
+                </div>
             </button>
 
             {/* Dropdown Menu */}

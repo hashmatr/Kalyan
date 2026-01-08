@@ -46,7 +46,7 @@ export function CalendarView({ progress, selectedDate, onSelectDate }: CalendarV
     };
 
     return (
-        <div className="glass-card p-4 sm:p-6">
+        <div className="glass-card rounded-3xl p-4 sm:p-6">
             {/* Header */}
             <div className="flex items-center justify-between mb-4 sm:mb-6">
                 <button
@@ -92,47 +92,26 @@ export function CalendarView({ progress, selectedDate, onSelectDate }: CalendarV
                             onClick={() => !dateIsFuture && onSelectDate(date)}
                             disabled={dateIsFuture}
                             className={`
-                relative aspect-square rounded-lg border transition-all
+                relative aspect-square rounded-xl border transition-all
                 flex flex-col items-center justify-center p-1
                 ${statusColors[status]}
-                ${isSelected ? 'ring-2 ring-purple-500 ring-offset-1 ring-offset-white' : ''}
+                ${isSelected ? 'ring-2 ring-slate-900 ring-offset-1 ring-offset-white' : ''}
                 ${dateIsFuture ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer hover:border-slate-300'}
                 ${isToday(date) && !isSelected ? 'ring-2 ring-orange-500' : ''}
               `}
                         >
                             <span className={`
                 text-sm sm:text-base font-bold
-                ${status === 'none' ? 'text-slate-400' : 'text-slate-900'}
+                ${status === 'none' ? 'text-slate-400' : 'text-slate-800'}
               `}>
                                 {format(date, 'd')}
                             </span>
-
-                            {dateProgress && (
-                                <span className="text-[10px] sm:text-xs font-medium text-slate-600">
-                                    {dateProgress.score}%
-                                </span>
-                            )}
                         </motion.button>
                     );
                 })}
             </div>
 
-            {/* Legend */}
-            <div className="mt-4 sm:mt-6 pt-4 border-t border-slate-200">
-                <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
-                    {[
-                        { status: 'perfect', label: '100%', color: 'bg-emerald-500' },
-                        { status: 'good', label: '80%+', color: 'bg-blue-500' },
-                        { status: 'partial', label: '50%+', color: 'bg-yellow-500' },
-                        { status: 'poor', label: '<50%', color: 'bg-red-500' },
-                    ].map(({ status, label, color }) => (
-                        <div key={status} className="flex items-center gap-1.5">
-                            <div className={`w-2.5 h-2.5 rounded-full ${color}`} />
-                            <span className="text-xs text-slate-500">{label}</span>
-                        </div>
-                    ))}
-                </div>
-            </div>
+
         </div>
     );
 }

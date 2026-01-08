@@ -5,21 +5,21 @@ import * as LucideIcons from 'lucide-react';
 import { DailyHabit } from '@/types';
 
 const categoryGradients: Record<string, string> = {
-    spiritual: 'from-purple-500 to-indigo-600',
+    spiritual: 'from-slate-700 to-zinc-900',
     physical: 'from-green-500 to-emerald-600',
     mental: 'from-blue-500 to-cyan-600',
     discipline: 'from-orange-500 to-red-600',
 };
 
 const categoryBgColors: Record<string, string> = {
-    spiritual: 'bg-purple-500/5 border-purple-200 hover:border-purple-500/40',
+    spiritual: 'bg-slate-500/5 border-slate-200 hover:border-slate-500/40',
     physical: 'bg-green-500/5 border-green-200 hover:border-green-500/40',
     mental: 'bg-blue-500/5 border-blue-200 hover:border-blue-500/40',
     discipline: 'bg-orange-500/5 border-orange-200 hover:border-orange-500/40',
 };
 
 const categoryBadgeColors: Record<string, string> = {
-    spiritual: 'bg-purple-100 text-purple-700 border-purple-200',
+    spiritual: 'bg-slate-100 text-slate-700 border-slate-200',
     physical: 'bg-green-100 text-green-700 border-green-200',
     mental: 'bg-blue-100 text-blue-700 border-blue-200',
     discipline: 'bg-orange-100 text-orange-700 border-orange-200',
@@ -43,7 +43,7 @@ export function HabitCard({ habit, isCompleted, onToggle, onDelete, disabled }: 
             whileTap={{ scale: disabled ? 1 : 0.98 }}
             onClick={() => !disabled && onToggle(habit.id)}
             className={`
-        relative rounded-2xl cursor-pointer transition-all duration-300
+        relative rounded-3xl cursor-pointer transition-all duration-300
         border overflow-hidden group
         ${isCompleted
                     ? 'bg-emerald-50 border-emerald-200'
@@ -78,7 +78,7 @@ export function HabitCard({ habit, isCompleted, onToggle, onDelete, disabled }: 
                 <div className="flex items-start justify-between mb-4">
                     {/* Icon container */}
                     <div className={`
-            w-12 h-12 rounded-xl
+            w-12 h-12 rounded-2xl
             flex items-center justify-center
             bg-gradient-to-br ${categoryGradients[habit.category]}
             shadow-lg shadow-black/5
