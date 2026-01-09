@@ -54,8 +54,8 @@ export function WeeklyChart({ progress }: WeeklyChartProps) {
                     />
                     <Tooltip
                         contentStyle={{
-                            backgroundColor: 'rgba(15,23,42,0.9)',
-                            border: '1px solid rgba(255,255,255,0.1)',
+                            backgroundColor: '#fff',
+                            border: '1px solid #e2e8f0',
                             borderRadius: '8px',
                             color: '#fff'
                         }}
@@ -124,10 +124,11 @@ export function MonthlyChart({ progress }: MonthlyChartProps) {
                     />
                     <Tooltip
                         contentStyle={{
-                            backgroundColor: 'rgba(15,23,42,0.9)',
-                            border: '1px solid rgba(255,255,255,0.1)',
+                            backgroundColor: '#fff',
+                            border: '1px solid #e2e8f0',
                             borderRadius: '8px',
-                            color: '#fff'
+                            color: '#1e293b',
+                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                         }}
                         labelFormatter={(value) => `Day ${value}`}
                         formatter={(value: number | undefined) => [`${value ?? 0}%`, 'Score']}
@@ -210,10 +211,11 @@ export function HabitsPieChart({ progress, habits = [] }: HabitsPieChartProps) {
                         </Pie>
                         <Tooltip
                             contentStyle={{
-                                backgroundColor: 'rgba(15,23,42,0.9)',
-                                border: '1px solid rgba(255,255,255,0.1)',
+                                backgroundColor: '#fff',
+                                border: '1px solid #e2e8f0',
                                 borderRadius: '8px',
-                                color: '#fff'
+                                color: '#1e293b',
+                                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                             }}
                             formatter={(value: number | undefined) => [`${value ?? 0}%`, 'Completion']}
                         />
@@ -276,10 +278,11 @@ export function YearlyChart({ monthlyScores, year }: YearlyChartProps) {
                     />
                     <Tooltip
                         contentStyle={{
-                            backgroundColor: 'rgba(15,23,42,0.9)',
-                            border: '1px solid rgba(255,255,255,0.1)',
+                            backgroundColor: '#fff',
+                            border: '1px solid #e2e8f0',
                             borderRadius: '8px',
-                            color: '#fff'
+                            color: '#1e293b',
+                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                         }}
                         formatter={(value: number | undefined) => [`${value ?? 0}%`, 'Avg Score']}
                     />
