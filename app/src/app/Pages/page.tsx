@@ -135,13 +135,17 @@ export default function Home() {
   };
 
   const handleAddHabit = (habitData: { name: string; description: string; icon: string; category: HabitCategory }) => {
-    addCustomHabit({
+    const newHabit = addCustomHabit({
       ...habitData,
     });
     setIsAddHabitOpen(false);
+
+    // Sync with DB immediately to prevent data loss on reload
+    scheduleSyncWithDatabase();
+
     loadData();
     // Force refresh habits state to include the new habit
-    setHabits(prev => ({ ...prev, [`custom_${Date.now()}`]: false }));
+    setHabits(prev => ({ ...prev, [newHabit.id]: false }));
   };
 
   const handleDeleteHabit = async (habitId: string) => {

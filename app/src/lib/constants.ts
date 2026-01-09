@@ -144,6 +144,8 @@ export const REWARDS: Reward[] = [
 ];
 
 export const PHYSICAL_PUNISHMENTS = [
+    { name: '20 Push-ups', description: 'Quick set of 20. No excuses.', icon: '💪' },
+    { name: '10 Pull-ups', description: 'Build that back. 10 reps.', icon: '🏋️' },
     { name: '50 Push-ups', description: 'Drop and give me 50!', icon: '💪' },
     { name: '100 Squats', description: 'Build those legs. 100 squats now.', icon: '🦵' },
     { name: '5 Min Plank', description: 'Core strength test. Hold it.', icon: '⏱️' },
